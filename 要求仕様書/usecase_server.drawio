@@ -48,9 +48,9 @@
           <mxGeometry x="660" y="555" width="180" height="80" as="geometry" />
         </mxCell>
         <mxCell id="9jKqP15oDGAoKN6BKpKO-10" value="接続を切断する" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="420" y="475" width="180" height="80" as="geometry" />
+          <mxGeometry x="450" y="490" width="180" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="9jKqP15oDGAoKN6BKpKO-11" value="意思を置く座標の受信" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-11" value="石の設置座標の受信" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="460" y="700" width="180" height="80" as="geometry" />
         </mxCell>
         <mxCell id="9jKqP15oDGAoKN6BKpKO-12" value="先手後手情報を送信" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
@@ -83,19 +83,22 @@
         <mxCell id="9jKqP15oDGAoKN6BKpKO-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-15" target="9jKqP15oDGAoKN6BKpKO-15">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="9jKqP15oDGAoKN6BKpKO-26" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-26" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.028;entryY=0.839;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-9" target="n8WTqfIcoDv5qlmcL_Hy-3">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="800" y="570" as="sourcePoint" />
             <mxPoint x="850" y="520" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="9jKqP15oDGAoKN6BKpKO-27" value="" style="endArrow=none;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-27" value="" style="endArrow=none;html=1;rounded=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitX=0.944;exitY=0.75;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-11" target="n8WTqfIcoDv5qlmcL_Hy-3">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="800" y="570" as="sourcePoint" />
             <mxPoint x="850" y="520" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="960" y="720" />
+            </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="9jKqP15oDGAoKN6BKpKO-28" value="" style="endArrow=none;html=1;rounded=0;entryX=0.037;entryY=0.346;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-6" target="n8WTqfIcoDv5qlmcL_Hy-3">
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-28" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-6" target="n8WTqfIcoDv5qlmcL_Hy-3">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="800" y="570" as="sourcePoint" />
             <mxPoint x="850" y="520" as="targetPoint" />
@@ -114,7 +117,94 @@
           <mxGeometry x="280" y="260" width="110" height="30" as="geometry" />
         </mxCell>
         <mxCell id="9jKqP15oDGAoKN6BKpKO-32" value="ログイン情報受信" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
-          <mxGeometry x="890" y="430" width="110" height="30" as="geometry" />
+          <mxGeometry x="880" y="450" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-33" value="設置座標の受信" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="960" y="670" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-34" value="確認" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="900" y="540" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-35" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-8" target="n8WTqfIcoDv5qlmcL_Hy-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="570" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="810" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-36" value="送信" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="890" y="610" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-37" value="" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" edge="1" parent="1" source="n8WTqfIcoDv5qlmcL_Hy-3" target="9jKqP15oDGAoKN6BKpKO-10">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="570" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-38" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1.003;exitY=0.437;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="n8WTqfIcoDv5qlmcL_Hy-2" target="9jKqP15oDGAoKN6BKpKO-6">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="570" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-39" value="" style="endArrow=none;html=1;rounded=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-11" target="n8WTqfIcoDv5qlmcL_Hy-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="570" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="300" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-40" value="" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;exitX=0;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-8" target="n8WTqfIcoDv5qlmcL_Hy-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="570" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="310" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-41" value="相手の手を受信" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="284" y="635" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-42" value="自分の手を送信" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="710" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-43" value="ログイン情報送信" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="240" y="450" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-44" value="もう一方も&lt;div&gt;切断を行う&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="760" y="500" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-46" value="通信を切断" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="500" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-47" value="" style="endArrow=none;html=1;rounded=0;entryX=0.935;entryY=0.655;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-10" target="n8WTqfIcoDv5qlmcL_Hy-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="570" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-48" value="" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="9jKqP15oDGAoKN6BKpKO-12">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1000" y="440" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-49" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;先手後手送信&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="334" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-50" value="" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;exitX=0.04;exitY=0.629;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="9jKqP15oDGAoKN6BKpKO-9" target="n8WTqfIcoDv5qlmcL_Hy-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="800" y="570" as="sourcePoint" />
+            <mxPoint x="850" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9jKqP15oDGAoKN6BKpKO-51" value="接続" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="319" y="555" width="60" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
