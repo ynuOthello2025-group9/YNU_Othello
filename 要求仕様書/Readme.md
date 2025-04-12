@@ -1,6 +1,6 @@
 ここに、仕様書に含める素材を入れて、最後にまとめますか
 
-- [ユースシナリオの作業用office365](
+- [ユースシナリオの作業用パワポ](
 https://ynuoffice365-my.sharepoint.com/:p:/g/personal/nishimura-misaki-rh_ynu_jp/EUUo5WWl1FlNhymtGxMPeLwBNQn1Ve_hCXvymUy618iJow?e=bsVtxJ)
 
 - [usecase_client(クライアントプログラムのユースケース図)](https://app.diagrams.net/#HC4P3/YNU_Othello/main/要求仕様書/usecase_client.drawio)
