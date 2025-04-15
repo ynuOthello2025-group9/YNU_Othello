@@ -10,6 +10,8 @@
 https://ynuoffice365-my.sharepoint.com/:p:/g/personal/nishimura-misaki-rh_ynu_jp/EUUo5WWl1FlNhymtGxMPeLwBNQn1Ve_hCXvymUy618iJow?e=bsVtxJ)
 
 - [クライアントのアクティビティ図.drawio](https://app.diagrams.net/#HC4P3/YNU_Othello/main/要求仕様書/activity_client.drawio)
+- [サーバのアクティビティ図.drawio](https://app.diagrams.net/#HC4P3/YNU_Othello/main/要求仕様書/activity_server_tsuji.drawio)
+
 
 - [境界インターフェース記述書の作業用パワポ](
 https://ynuoffice365-my.sharepoint.com/:p:/g/personal/muhammad-azian-mz_ynu_jp/EbcNWGu-tV5NtpMvEpc3-NEB33RcKI5ET83SMBiGGmTGPQ?e=V529SI)
