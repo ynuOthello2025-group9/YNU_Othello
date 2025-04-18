@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0" version="26.2.12">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" version="26.2.12">
   <diagram name="ページ1" id="blJo8V8RZGlDzMt2KCXf">
-    <mxGraphModel dx="583" dy="701" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2407" dy="774" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="ICABriZi5GorXYD_xj9T-27" value="ログイン保持" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=20;html=1;" parent="1" vertex="1">
-          <mxGeometry x="60" y="357.5" width="580" height="602.5" as="geometry" />
+          <mxGeometry x="-50" y="370" width="706" height="590" as="geometry" />
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-30" value="クライアントプログラム" style="swimlane;startSize=20;html=1;" parent="ICABriZi5GorXYD_xj9T-27" vertex="1">
-          <mxGeometry y="20" width="250" height="582.5" as="geometry" />
+          <mxGeometry y="20" width="320" height="570" as="geometry" />
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-145" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-30" source="ICABriZi5GorXYD_xj9T-31" target="ICABriZi5GorXYD_xj9T-35" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -18,10 +18,12 @@
           <mxGeometry x="110" y="30" width="20" height="20" as="geometry" />
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-35" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;サーバに接続要求&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-30" vertex="1">
-          <mxGeometry x="60" y="90" width="120" height="30" as="geometry" />
+          <mxGeometry x="59.5" y="72.5" width="120" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-30" source="ICABriZi5GorXYD_xj9T-38" target="ICABriZi5GorXYD_xj9T-43" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="ICABriZi5GorXYD_xj9T-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-30" target="ICABriZi5GorXYD_xj9T-43" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="460" as="sourcePoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-37" value="「対局」へ" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ICABriZi5GorXYD_xj9T-36" vertex="1" connectable="0">
           <mxGeometry x="-0.2011" y="1" relative="1" as="geometry">
@@ -29,81 +31,84 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-38" value="先手後手・プレイヤー名の受信" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-30" vertex="1">
-          <mxGeometry x="30" y="472.5" width="180" height="20" as="geometry" />
+          <mxGeometry x="30" y="430" width="180" height="20" as="geometry" />
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-43" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#000000;" parent="ICABriZi5GorXYD_xj9T-30" vertex="1">
-          <mxGeometry x="109" y="552.5" width="21" height="20" as="geometry" />
+          <mxGeometry x="109" y="520" width="21" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-148" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;プレイヤー名送信&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-30" vertex="1">
-          <mxGeometry x="59.5" y="177.5" width="120" height="30" as="geometry" />
+        <mxCell id="ICABriZi5GorXYD_xj9T-146" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-27" source="ICABriZi5GorXYD_xj9T-35" target="rVjmtnA_uVCA2KCBdjWy-1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="300" y="122.5" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-44" value="サーバプログラム" style="swimlane;startSize=20;html=1;" parent="ICABriZi5GorXYD_xj9T-27" vertex="1">
-          <mxGeometry x="250" y="20" width="330" height="582.5" as="geometry" />
+          <mxGeometry x="320" y="20" width="386" height="570" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="ICABriZi5GorXYD_xj9T-44" source="rVjmtnA_uVCA2KCBdjWy-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ICABriZi5GorXYD_xj9T-44" source="rVjmtnA_uVCA2KCBdjWy-1" target="rVjmtnA_uVCA2KCBdjWy-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ICABriZi5GorXYD_xj9T-44" source="rVjmtnA_uVCA2KCBdjWy-1" target="rVjmtnA_uVCA2KCBdjWy-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-1" value="" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="ICABriZi5GorXYD_xj9T-44">
+          <mxGeometry x="90" y="120" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ICABriZi5GorXYD_xj9T-148" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;プレイヤー名送信&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
+          <mxGeometry x="-260.5" y="275" width="120" height="30" as="geometry" />
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-46" value="接続許可" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
-          <mxGeometry x="80" y="145" width="170" height="20" as="geometry" />
+          <mxGeometry x="84" y="250" width="170" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-48" target="ICABriZi5GorXYD_xj9T-53" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-48" value="クライアント接続状態の確認" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
-          <mxGeometry x="84" y="262.5" width="170" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-53" target="ICABriZi5GorXYD_xj9T-54" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-52" value="1台接続" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ICABriZi5GorXYD_xj9T-51" vertex="1" connectable="0">
-          <mxGeometry x="0.0794" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-153" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-53" edge="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="250" y="362.5" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-154" value="2台接続" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ICABriZi5GorXYD_xj9T-153" vertex="1" connectable="0">
-          <mxGeometry x="0.1412" y="-4" relative="1" as="geometry">
-            <mxPoint y="-4" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-53" value="" style="rhombus;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
-          <mxGeometry x="159" y="302.5" width="20" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-157" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-54" target="ICABriZi5GorXYD_xj9T-156" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-54" value="先手決定" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
-          <mxGeometry x="9" y="362.5" width="101" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-152" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-151" target="ICABriZi5GorXYD_xj9T-48" edge="1">
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-151" target="ICABriZi5GorXYD_xj9T-156">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-151" value="プレイヤー名取得" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
-          <mxGeometry x="84" y="222.5" width="170" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-158" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-155" target="ICABriZi5GorXYD_xj9T-156" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-155" value="後手決定" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
-          <mxGeometry x="200" y="362.5" width="101" height="20" as="geometry" />
+          <mxGeometry x="84" y="320" width="170" height="20" as="geometry" />
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-156" value="先手後手・プレイヤー名送信" style="rounded=0;whiteSpace=wrap;html=1;" parent="ICABriZi5GorXYD_xj9T-44" vertex="1">
-          <mxGeometry x="80" y="422.5" width="170" height="20" as="geometry" />
+          <mxGeometry x="84" y="370" width="170" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-146" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-27" source="ICABriZi5GorXYD_xj9T-35" target="ICABriZi5GorXYD_xj9T-46" edge="1">
+        <mxCell id="ICABriZi5GorXYD_xj9T-149" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-46" target="ICABriZi5GorXYD_xj9T-148" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-149" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-27" source="ICABriZi5GorXYD_xj9T-46" target="ICABriZi5GorXYD_xj9T-148" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-150" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-27" source="ICABriZi5GorXYD_xj9T-148" target="ICABriZi5GorXYD_xj9T-151" edge="1">
+        <mxCell id="ICABriZi5GorXYD_xj9T-150" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-44" source="ICABriZi5GorXYD_xj9T-148" target="ICABriZi5GorXYD_xj9T-151" edge="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="290" y="292.5" as="targetPoint" />
+            <mxPoint x="-30" y="370" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ICABriZi5GorXYD_xj9T-159" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-27" source="ICABriZi5GorXYD_xj9T-156" target="ICABriZi5GorXYD_xj9T-38" edge="1">
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-7" value="接続拒否" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="ICABriZi5GorXYD_xj9T-44">
+          <mxGeometry x="220" y="120" width="136" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ICABriZi5GorXYD_xj9T-44" source="rVjmtnA_uVCA2KCBdjWy-13" target="ICABriZi5GorXYD_xj9T-46">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-13" value="先手決定" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="ICABriZi5GorXYD_xj9T-44">
+          <mxGeometry x="20" y="185" width="101" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ICABriZi5GorXYD_xj9T-44" source="rVjmtnA_uVCA2KCBdjWy-14" target="ICABriZi5GorXYD_xj9T-46">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-14" value="後手決定" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="ICABriZi5GorXYD_xj9T-44">
+          <mxGeometry x="159" y="185" width="101" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-5" value="接続数&amp;gt;=3" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ICABriZi5GorXYD_xj9T-44">
+          <mxGeometry x="129" y="100" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-22" value="接続数=1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ICABriZi5GorXYD_xj9T-44">
+          <mxGeometry x="15" y="140" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="rVjmtnA_uVCA2KCBdjWy-21" value="接続数=2" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ICABriZi5GorXYD_xj9T-44">
+          <mxGeometry x="144" y="140" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ICABriZi5GorXYD_xj9T-159" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="ICABriZi5GorXYD_xj9T-27" source="ICABriZi5GorXYD_xj9T-156" target="ICABriZi5GorXYD_xj9T-38" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="214" y="450" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="ICABriZi5GorXYD_xj9T-60" value="石の設置場所受信" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=20;html=1;" parent="1" vertex="1">
           <mxGeometry x="680" y="20" width="570" height="440" as="geometry" />
@@ -175,7 +180,7 @@
         <mxCell id="M7Z_oNUjwSbaCWjWREQJ-6" value="サーバ" style="swimlane;startSize=20;html=1;" parent="M7Z_oNUjwSbaCWjWREQJ-1" vertex="1">
           <mxGeometry x="240" y="20" width="260" height="310" as="geometry" />
         </mxCell>
-        <mxCell id="mJKkVBQriXfu8Gpz5K2V-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-8" target="mJKkVBQriXfu8Gpz5K2V-3">
+        <mxCell id="mJKkVBQriXfu8Gpz5K2V-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-8" target="mJKkVBQriXfu8Gpz5K2V-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="M7Z_oNUjwSbaCWjWREQJ-8" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=light-dark(#000000, #1a1a1a);fontColor=#333333;strokeColor=#666666;" parent="M7Z_oNUjwSbaCWjWREQJ-6" vertex="1">
@@ -187,13 +192,13 @@
         <mxCell id="M7Z_oNUjwSbaCWjWREQJ-4" value="5秒に1回信号を受信" style="rounded=0;whiteSpace=wrap;html=1;" parent="M7Z_oNUjwSbaCWjWREQJ-6" vertex="1">
           <mxGeometry x="-220" y="112" width="170" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="mJKkVBQriXfu8Gpz5K2V-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-9" target="M7Z_oNUjwSbaCWjWREQJ-13">
+        <mxCell id="mJKkVBQriXfu8Gpz5K2V-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-9" target="M7Z_oNUjwSbaCWjWREQJ-13" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="M7Z_oNUjwSbaCWjWREQJ-9" value="信号を受信" style="rounded=0;whiteSpace=wrap;html=1;" parent="M7Z_oNUjwSbaCWjWREQJ-6" vertex="1">
           <mxGeometry x="14.5" y="112" width="170" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="mJKkVBQriXfu8Gpz5K2V-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-13" target="mJKkVBQriXfu8Gpz5K2V-3">
+        <mxCell id="mJKkVBQriXfu8Gpz5K2V-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-13" target="mJKkVBQriXfu8Gpz5K2V-3" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="233" y="168" />
@@ -222,13 +227,13 @@
             <mxPoint x="412" y="388" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mJKkVBQriXfu8Gpz5K2V-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-4" target="M7Z_oNUjwSbaCWjWREQJ-9">
+        <mxCell id="mJKkVBQriXfu8Gpz5K2V-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="M7Z_oNUjwSbaCWjWREQJ-4" target="M7Z_oNUjwSbaCWjWREQJ-9" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="mJKkVBQriXfu8Gpz5K2V-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="mJKkVBQriXfu8Gpz5K2V-3" target="M7Z_oNUjwSbaCWjWREQJ-9">
+        <mxCell id="mJKkVBQriXfu8Gpz5K2V-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="M7Z_oNUjwSbaCWjWREQJ-6" source="mJKkVBQriXfu8Gpz5K2V-3" target="M7Z_oNUjwSbaCWjWREQJ-9" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="mJKkVBQriXfu8Gpz5K2V-3" value="信号を待つ" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="M7Z_oNUjwSbaCWjWREQJ-6">
+        <mxCell id="mJKkVBQriXfu8Gpz5K2V-3" value="信号を待つ" style="rounded=0;whiteSpace=wrap;html=1;" parent="M7Z_oNUjwSbaCWjWREQJ-6" vertex="1">
           <mxGeometry x="14.5" y="66" width="170" height="20" as="geometry" />
         </mxCell>
       </root>
