@@ -10,7 +10,7 @@ public class FreeGPT extends JFrame {
         setTitle("オセロ");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        // tesaaa
+        // tesaaabbbb
 
         // オセロの盤面パネル
         JPanel boardPanel = new JPanel(new GridLayout(BOARD_SIZE, BOARD_SIZE));
