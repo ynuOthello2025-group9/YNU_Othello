@@ -1,41 +1,73 @@
-import java.util.Arrays;
-import java.util.List;
 import java.util.ArrayList;
 
 public class CPU {
     private String turn; // 先手後手
     private String level; // 強さ（3段階）
 
+    // 定数
+    private static final int N_SQUARE = 64; // 盤面のマス数（8×8）
+    private static final int N_LINE = 8; // 行数
+    private static final int LINE_PATTERN = 256; // 各行の可能なパターン数（2^8）
+    private static final int SC_W = 64; // 評価値の絶対値の最大値
+
+    // 各マスの重み
+    private static final int[] CELL_WEIGHT = {
+            2714, 147, 69, -18, -18, 69, 147, 2714,
+            147, -577, -186, -153, -153, -186, -577, 147,
+            69, -186, -379, -122, -122, -379, -186, 69,
+            -18, -153, -122, -169, -169, -122, -153, -18,
+            -18, -153, -122, -169, -169, -122, -153, -18,
+            69, -186, -379, -122, -122, -379, -186, 69,
+            147, -577, -186, -153, -153, -186, -577, 147,
+            2714, 147, 69, -18, -18, 69, 147, 2714
+    };
+
+    // 事前計算するスコア
+    private static final int[][] CELL_SCORE = new int[N_LINE][LINE_PATTERN];
+
     // コンストラクタ
     public CPU(String turn, String level) {
         this.turn = turn;
         this.level = level;
+        evaluateInit();
     }
 
     /*
-    // 操作情報をクライアントに送信
-    // clientはこれを呼び出し続ければいい
-    public Integer[] getCPUOperation(Othello othello) {
+     * // 操作情報をクライアントに送信
+     * // clientはこれを呼び出し続ければいい
+     * public Integer[] getCPUOperation(Othello othello) {
+     * 
+     * // 盤面情報を取得
+     * Integer[][] board = getBoard(othello); // Othelloクラスのメソッド?
+     * 
+     * // 次の手を決定
+     * int[] operationInfo = decideNextMove(board);
+     * 
+     * if (operationInfo != null) {
+     * // 決定した手を返す（Client内で処理）
+     * return operationInfo;
+     * } else {
+     * // 置ける場所がない場合
+     * System.out.println("CPU: 置ける場所がありません。");
+     * return new Integer[] { -1, -1 }; // パスの場合
+     * }
+     * }
+     */
 
-        // 盤面情報を取得
-        Integer[][] board = getBoard(othello); // Othelloクラスのメソッド?
+    // 事前計算
+    private void evaluateInit() {
 
-        // 次の手を決定
-        int[] operationInfo = decideNextMove(board);
+    }
 
-        if (operationInfo != null) {
-            // 決定した手を返す（Client内で処理）
-            return operationInfo;
-        } else {
-            // 置ける場所がない場合
-            System.out.println("CPU: 置ける場所がありません。");
-            return new Integer[] { -1, -1 }; // パスの場合
-        }
-    }*/
+    // 評価関数
+    private int evaluate(Integer[][] board) {
+        int res = 0;
+
+        return res;
+    }
 
     // 次の手を決定するメソッド(AI)
     private int[] decideNextMove(Integer[][] board) {
-        // 現在はlevelに関係なくランダムに選択
         // 置ける場所をリストアップ
         ArrayList<int[]> possibleMoves = new ArrayList<>();
 
@@ -47,13 +79,21 @@ public class CPU {
             }
         }
 
-        // 置ける場所からランダムに選択
-        // アルゴリズムはここを改良して実装する
-        if (!possibleMoves.isEmpty()) {
-            java.util.Random random = new java.util.Random();
-            return possibleMoves.get(random.nextInt(possibleMoves.size()));
+        // 置ける場所がない場合
+        if (possibleMoves.isEmpty()) {
+            return null;
         }
-        return null; // 置ける場所がない場合
+
+        // 各手を評価し、最善手を選ぶ
+        int bestScore = "先手".equals(turn) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int[] bestMove = null;
+
+        return bestMove;
+    }
+
+    // 石を置くメソッド（実際はOthelloクラスに実装）
+    private void placeStone(int row, int col, Integer[][] board) {
+        
     }
 
     // 特定の位置に石を置けるか判定するメソッド (実際はOthelloクラスに実装するはず。適当です。)
