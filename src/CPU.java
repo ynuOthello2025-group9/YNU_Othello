@@ -5,9 +5,9 @@ public class CPU {
     private String level; // 強さ（3段階）
 
     // 定数
-    private static final int N_SQUARE = 64; // 盤面のマス数（8×8）
+    //private static final int N_SQUARE = 64; // 盤面のマス数（8×8）
     private static final int N_LINE = 8; // 行数
-    private static final int LINE_PATTERN = 256; // 各行の可能なパターン数（2^8）
+    private static final int LINE_PATTERN = 6361; // 各行の可能なパターン数（3^8）
     private static final int SC_W = 64; // 評価値の絶対値の最大値
 
     // 各マスの重み
@@ -41,7 +41,7 @@ public class CPU {
      * Integer[][] board = getBoard(othello); // Othelloクラスのメソッド?
      * 
      * // 次の手を決定
-     * int[] operationInfo = decideNextMove(board);
+     * int[] operationInfo = decideMove(board);
      * 
      * if (operationInfo != null) {
      * // 決定した手を返す（Client内で処理）
@@ -56,21 +56,43 @@ public class CPU {
 
     // 事前計算
     private void evaluateInit() {
-
+        for (int line = 0; line < N_LINE; line++) {
+            for (int pattern = 0; pattern < LINE_PATTERN; pattern++) {
+                int score = 0;
+                int tempPattern = pattern;
+                for (int col = 0; col < 8; col++) {
+                    int state = tempPattern % 3; // 0:空, 1:黒, 2:白
+                    int cellIndex = line * 8 + col;
+                    if (state == 1)
+                        score += CELL_WEIGHT[cellIndex];
+                    else if (state == 2)
+                        score -= CELL_WEIGHT[cellIndex];
+                    tempPattern /= 3;
+                }
+                CELL_SCORE[line][pattern] = score;
+            }
+        }
     }
 
     // 評価関数
     private int evaluate(Integer[][] board) {
         int res = 0;
-
-        return res;
+        for (int line = 0; line < N_LINE; line++) {
+            int pattern = 0;
+            for (int col = 0; col < 8; col++) {
+                int stone = board[line][col];
+                int value = (stone == 0) ? 0 : (stone == 1) ? 1 : 2;
+                pattern += value * (int) Math.pow(3, col);
+            }
+            res += CELL_SCORE[line][pattern];
+        }
+        return "先手".equals(turn) ? res : -res;
     }
 
-    // 次の手を決定するメソッド(AI)
-    private int[] decideNextMove(Integer[][] board) {
+    // 操作を決定するアルゴリズム(現在：一手読み)
+    private int[] decideMove(Integer[][] board) {
         // 置ける場所をリストアップ
         ArrayList<int[]> possibleMoves = new ArrayList<>();
-
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (canPlace(i, j, board)) {
@@ -84,9 +106,33 @@ public class CPU {
             return null;
         }
 
-        // 各手を評価し、最善手を選ぶ
+        // 最善手の選択
         int bestScore = "先手".equals(turn) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        int[] bestMove = null;
+        int[] bestMove = possibleMoves.get(0); // デフォルトで最初の合法手
+
+        for (int[] move : possibleMoves) {
+            // 盤面をコピー
+            Integer[][] tempBoard = new Integer[8][8];
+            for (int i = 0; i < 8; i++) {
+                tempBoard[i] = board[i].clone();
+            }
+            // 仮に石を置く
+            placeStone(move[0], move[1], tempBoard);
+            // 評価値を計算
+            int score = evaluate(tempBoard);
+            // 先手なら最大化、後手なら最小化
+            if ("先手".equals(turn)) {
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            } else {
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+        }
 
         return bestMove;
     }
