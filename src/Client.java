@@ -3,6 +3,8 @@ import java.net.*;
 
 public class Client {
 
+    // pc connection test
+
     // サーバとの接続情報などを保持するメンバ変数がここに追加される可能性があります
     // 例: private Socket socket;
     // 例: private DataInputStream dataInputStream;
