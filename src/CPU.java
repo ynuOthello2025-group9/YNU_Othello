@@ -53,6 +53,9 @@ public class CPU {
      * }
      * }
      */
+    public int[] getCPUOperation(Integer[][] board) {
+        return this.decideMove(board);
+    }
 
     // 事前計算
     private void evaluateInit() {
