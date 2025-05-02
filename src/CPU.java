@@ -5,12 +5,11 @@ public class CPU {
     private String level; // 強さ（3段階）
 
     // 定数
-    //private static final int N_SQUARE = 64; // 盤面のマス数（8×8）
     private static final int N_LINE = 8; // 行数
     private static final int LINE_PATTERN = 6361; // 各行の可能なパターン数（3^8）
-    private static final int SC_W = 64; // 評価値の絶対値の最大値
+    private static final int DEPTH = 3; // 探索深さ（3手先読み）
 
-    // 各マスの重み
+    // 各マスの評価値
     private static final int[] CELL_WEIGHT = {
             2714, 147, 69, -18, -18, 69, 147, 2714,
             147, -577, -186, -153, -153, -186, -577, 147,
@@ -22,10 +21,11 @@ public class CPU {
             2714, 147, 69, -18, -18, 69, 147, 2714
     };
 
-    // 事前計算するスコア
+    // 事前計算する行の評価値
     private static final int[][] CELL_SCORE = new int[N_LINE][LINE_PATTERN];
 
     // コンストラクタ
+    // CPUクラスインスタンス生成時に先手後手と強さを指定する。
     public CPU(String turn, String level) {
         this.turn = turn;
         this.level = level;
@@ -74,7 +74,7 @@ public class CPU {
         }
     }
 
-    // 評価関数
+    // 評価メソッド
     private int evaluate(Integer[][] board) {
         int res = 0;
         for (int line = 0; line < N_LINE; line++) {
@@ -89,7 +89,47 @@ public class CPU {
         return "先手".equals(turn) ? res : -res;
     }
 
-    // 操作を決定するアルゴリズム(現在：一手読み)
+    // negamax法による探索メソッド
+    private int negamax(Integer[][] board, int depth, int color) {
+        if (depth == 0) {
+            return color * evaluate(board); // 葉ノードでは評価値を返す（符号調整）
+        }
+
+        ArrayList<int[]> possibleMoves = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (canPlace(i, j, board)) {
+                    possibleMoves.add(new int[] { i, j });
+                }
+            }
+        }
+
+        if (possibleMoves.isEmpty()) {
+            // パスの場合、相手のターンで再探索（深さはそのまま）
+            Integer[][] tempBoard = new Integer[8][8];
+            for (int i = 0; i < 8; i++) {
+                tempBoard[i] = board[i].clone();
+            }
+            return -negamax(tempBoard, depth, -color); // パス後の相手のスコアを反転
+        }
+
+        int bestScore = Integer.MIN_VALUE;
+        for (int[] move : possibleMoves) {
+            Integer[][] tempBoard = new Integer[8][8];
+            for (int i = 0; i < 8; i++) {
+                tempBoard[i] = board[i].clone();
+            }
+
+            placeStone(move[0], move[1], tempBoard);
+            // othello.placeStone(move[0], move[1], turn.equals("先手") ? 1 : 2, tempBoard);
+            int score = -negamax(tempBoard, depth - 1, -color);
+            bestScore = Math.max(bestScore, score);
+        }
+
+        return bestScore;
+    }
+
+    // 操作を決定するアルゴリズム(現在：negamax法DEPTH手読み)
     private int[] decideMove(Integer[][] board) {
         // 置ける場所をリストアップ
         ArrayList<int[]> possibleMoves = new ArrayList<>();
@@ -103,12 +143,13 @@ public class CPU {
 
         // 置ける場所がない場合
         if (possibleMoves.isEmpty()) {
-            return null;
+            return null; //パス
         }
 
         // 最善手の選択
-        int bestScore = "先手".equals(turn) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int bestScore = Integer.MIN_VALUE;
         int[] bestMove = possibleMoves.get(0); // デフォルトで最初の合法手
+        int color = "先手".equals(turn) ? 1 : -1; // 先手:+1, 後手:-1
 
         for (int[] move : possibleMoves) {
             // 盤面をコピー
@@ -119,18 +160,11 @@ public class CPU {
             // 仮に石を置く
             placeStone(move[0], move[1], tempBoard);
             // 評価値を計算
-            int score = evaluate(tempBoard);
-            // 先手なら最大化、後手なら最小化
-            if ("先手".equals(turn)) {
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMove = move;
-                }
-            } else {
-                if (score < bestScore) {
-                    bestScore = score;
-                    bestMove = move;
-                }
+            int score = -negamax(tempBoard, DEPTH - 1, -color);
+            // 最善手更新
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
             }
         }
 
@@ -148,7 +182,6 @@ public class CPU {
         if (board[row][col] != 0) {
             return false;
         }
-
         // 自分の石（先手なら1、後手なら2）
         int myStone;
         if ("先手".equals(turn)) {
@@ -156,40 +189,34 @@ public class CPU {
         } else {
             myStone = 2; // 後手なら白（2）
         }
-
         int opponentStone;
         if (myStone == 1) {
             opponentStone = 2; // 自分が黒（1）なら相手は白（2）
         } else {
             opponentStone = 1; // 自分が白（2）なら相手は黒（1）
         }
-
         // 8方向（上下左右、斜め）をチェック
         int[][] directions = {
                 { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }, // 上下左右
                 { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } // 斜め
         };
-
         for (int[] dir : directions) {
             int dr = dir[0];
             int dc = dir[1];
             int r = row + dr;
             int c = col + dc;
             boolean foundOpponent = false;
-
             // 相手の石を挟めるかチェック
             while (r >= 0 && r < 8 && c >= 0 && c < 8 && board[r][c] == opponentStone) {
                 foundOpponent = true;
                 r += dr;
                 c += dc;
             }
-
             // 相手の石があって、その先に自分の石があれば置ける
             if (foundOpponent && r >= 0 && r < 8 && c >= 0 && c < 8 && board[r][c] == myStone) {
                 return true;
             }
         }
-
         return false; // どの方向でも挟めない場合
     }
 }
