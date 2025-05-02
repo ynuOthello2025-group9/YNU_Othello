@@ -1,7 +1,11 @@
 import java.io.*;
 import java.net.*;
+import javax.swing.SwingUtilities;
 
 public class Client {
+
+    private ScreenUpdater screenUpdater; // UIへの参照
+    private OthelloStub othelloGame; // オセロゲームロジック
 
     // サーバとの接続情報などを保持するメンバ変数がここに追加される可能性があります
     // 例: private Socket socket;
@@ -9,7 +13,9 @@ public class Client {
     // 例: private DataOutputStream dataOutputStream;
 
     // コンストラクタ
-    public Client() {
+    // ScreenUpdaterのインスタンスを受け取るように変更
+    public Client(ScreenUpdater screenUpdater) {
+        this.screenUpdater = screenUpdater;
         // クライアントの初期化処理
         System.out.println("Client object created.");
     }
@@ -63,8 +69,38 @@ public class Client {
         // }
         // 仮の戻り値
         receivedInfo[0] = -1; // 例として無効な値
-        receivedInfo[1] = -1;
+        receivedInfo[1] = -1; // 例として無効な値
         return receivedInfo;
+    }
+
+    // UIからのゲーム開始要求を受け付ける
+    // CPU対戦かネットワーク対戦か、手番、CPUの強さなどの情報を受け取る想定
+    public void startGame(boolean isCpuMatch, String playerOrder, String cpuStrength) {
+        System.out.println("Game start requested.");
+        System.out.println("  Mode: " + (isCpuMatch ? "CPU Match" : "Network Match"));
+        if (isCpuMatch) {
+            System.out.println("  Player Order: " + playerOrder);
+            System.out.println("  CPU Strength: " + cpuStrength);
+            // CPU対戦の初期化処理
+            if (screenUpdater != null) {
+                // ゲーム画面に遷移
+                screenUpdater.showGameScreen(); // ScreenUpdaterにshowGameScreenメソッドを追加する必要があります
+
+                // OthelloStubのインスタンスを作成しゲームを開始
+                othelloGame = new OthelloStub();
+
+                // 初期盤面データをOthelloStubから取得し、UIを更新
+                Integer[][] initialBoard = othelloGame.局面情報を取得();
+                screenUpdater.updateBoard(initialBoard); // ScreenUpdaterにupdateBoardメソッドを追加する必要があります
+
+                // 初期状態のUIステータスを更新
+                screenUpdater.updateStatus(othelloGame.手番情報を取得(), "ゲーム開始");
+            }
+        } else {
+            // ネットワーク対戦の初期化処理
+            // TODO: ネットワーク接続処理を実装
+            // connectToServer(playerName); // プレイヤ名が必要
+        }
     }
 
     // 画面の更新
@@ -72,16 +108,70 @@ public class Client {
 
     // プレイヤの操作を受付
     // 受付結果をInteger配列で返す
+    // このメソッドはUIからの操作を受け取るために使用しない
+    // UIからの操作はhandlePlayerMoveメソッドで受け取る
     public Integer[] getPlayerOperation() {
-        System.out.println("Waiting for player input (operation).");
-        // 実際にはここにキーボード入力などの受付処理が入ります
-        // 例: Scanner scanner = new Scanner(System.in);
-        // int row = scanner.nextInt();
-        // int col = scanner.nextInt();
-        // return new Integer[]{row, col};
-        // 仮の戻り値（例: ユーザーが(1, 2)を選択したと仮定）
-        return new Integer[]{1, 2};
+         throw new UnsupportedOperationException("getPlayerOperation not used in this UI model.");
     }
+
+    // ScreenUpdaterからプレイヤーの操作を受け取る
+    // row, col: 石を置くマス目の座標 (0-7, 0-7)
+    public void handlePlayerMove(int row, int col) {
+        System.out.println("Client: Player attempted move at (" + row + "," + col + ")");
+        if (othelloGame == null) {
+            System.out.println("Client: Game not started yet.");
+            return;
+        }
+
+        // TODO: 設置可能場所をチェックするロジックをここに実装
+        // OthelloStubの設置可能場所取得メソッドを使用する想定だが、現時点ではスタブなので単純に空きマスかチェック
+        Integer[][] currentBoard = othelloGame.局面情報を取得();
+        // OthelloStubの設置可能場所取得メソッドを使って、置ける場所か判定
+        Integer[][] playableBoard = othelloGame.設置可能場所取得(othelloGame.手番情報を取得(), currentBoard);
+
+        boolean isValidMove = false;
+        // TODO: playableBoardをチェックして、(row, col)が置ける場所か判定するロジック
+        // 現時点では単純に空きマスかチェックするスタブ的な判定
+         if (row >= 0 && row < 8 && col >= 0 && col < 8 && currentBoard[row][col] == 0) {
+             isValidMove = true;
+         }
+
+
+        if (isValidMove) {
+            System.out.println("Client: Valid move.");
+            // 有効な手なので盤面に反映
+            Integer[] playerOperation = {row, col};
+            Integer[][] newBoard = othelloGame.局面に反映(playerOperation);
+
+            // UIを更新
+            screenUpdater.updateBoard(newBoard);
+
+            // ゲーム終了判定
+            // TODO: 正確な終了判定を実装
+            boolean isGameOver = othelloGame.対局終了を判断(playerOperation); // ここは操作情報ではなく現在の盤面で判断すべきかも
+
+            if (isGameOver) {
+                 String result = othelloGame.勝敗を判断(newBoard); // 終了していれば勝敗を判断
+                 screenUpdater.updateStatus("ゲーム終了", "結果: " + result);
+                 // TODO: ゲーム終了後の処理（メニューに戻るなど）
+            } else {
+                // 手番を変更
+                othelloGame.手番を変更();
+                screenUpdater.updateStatus(othelloGame.手番情報を取得(), "石を置きました。\nCPU の番です。"); // CPUの番であることを示すメッセージ
+
+                // TODO: CPUの手番処理をここに呼び出す
+                // 例: handleCpuTurn();
+                // ここでCPUの手番を処理する必要がある
+                // 現時点ではCPUの手番処理は未実装のため、ここで処理が止まります。
+            }
+
+        } else {
+            System.out.println("Client: Invalid move.");
+            // 無効な手の場合のユーザーへの通知（UIにメッセージ表示など）
+            screenUpdater.updateStatus(othelloGame.手番情報を取得(), "そこには置けません。");
+        }
+    }
+
 
     // 接続確認信号送信
     public void sendConnectionSignal() {
@@ -95,25 +185,18 @@ public class Client {
         // }
     }
 
-    // メインメソッド（テスト用など）
+    // メインメソッド（アプリケーションのエントリーポイント）
     public static void main(String[] args) {
-        Client client = new Client();
-        client.connectToServer("TestPlayer");
-        Integer[] dummyOperation = {5, 5};
-        client.sendOperationToServer(dummyOperation);
-        Integer[] received = client.receiveInfoFromServer();
-        if (received != null) {
-            System.out.println("Received dummy info: [" + received[0] + ", " + received[1] + "]");
-        }
-        Integer[][] dummyBoard = new Integer[8][8];
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                dummyBoard[i][j] = (i + j) % 3; // ダミーの盤面データ
-            }
-        }
-        ScreenUpdater.updateScreen("Playing", dummyBoard);
-        Integer[] playerMove = client.getPlayerOperation();
-        System.out.println("Player entered move: [" + playerMove[0] + ", " + playerMove[1] + "]");
-        client.sendConnectionSignal();
+        SwingUtilities.invokeLater(() -> {
+            // ScreenUpdaterのインスタンスを作成
+            ScreenUpdater screenUpdater = new ScreenUpdater();
+
+            // Clientのインスタンスを作成し、ScreenUpdaterを渡す
+            Client client = new Client(screenUpdater);
+
+            // ScreenUpdaterにClientの参照をセット
+            // ScreenUpdater側でClientのメソッドを呼び出す必要がある場合、この参照が必要になる
+            screenUpdater.setClient(client);
+        });
     }
 }
