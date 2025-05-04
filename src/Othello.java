@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+//オセロゲームの主に盤面管理やゲームを進めるクラス
 public class Othello {
     //盤面に関する情報
     private static final int SIZE = 8;
@@ -11,7 +12,7 @@ public class Othello {
     private static final int BLACK = 1; //黒の石が置かれている
     private static final int WHITE = 2; //白の石が置かれている
     private static final int CANPLACE = 3;  //設置可能
-    private static String turn = "Black";   //手番（先手は黒）
+    private static String turn;   //手番
 
     // テスト用
     static Scanner scanner = new Scanner(System.in);
@@ -19,6 +20,7 @@ public class Othello {
     //コンストラクタ（そもそもインスタンスの生成は必要？？）
     public Othello() {
         initBoard();    //盤面の初期化
+        turn = "Black"; //先手は黒
     }
 
     // 盤面初期化メソッド
@@ -78,11 +80,19 @@ public class Othello {
             for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] == EMPTY) {
                     if (validMove[i][j] == CANPLACE) {
-                        System.out.print(validMove[i][j] + " ");
+                        System.out.print("◎" + " ");
                         continue;
                     }
                 }
-                System.out.print(board[i][j] + " ");
+
+                if (board[i][j] == EMPTY) {
+                    System.out.print(" " + " ");
+                } else if(board[i][j] == BLACK) {
+                    System.out.print("○" + " ");
+                } else if(board[i][j] == WHITE) {
+                    System.out.print("●" + " ");
+                }
+
             }
             System.out.println();
         }
@@ -262,9 +272,48 @@ public class Othello {
 
             printBoard(validMoves);
             if (othello.hasValidMoves(turn)) {
-                System.out.println(turn + "の番です。x y の順に入力してください（0～7）:");
-                int x = scanner.nextInt();
-                int y = scanner.nextInt();
+                
+                int x = -1, y = -1;
+
+                while (true) {
+                    try {
+                        System.out.println(turn + "の番です。x y の順に入力してください（0～7）：");
+
+                        // 入力チェック：整数かどうか
+                        if (!scanner.hasNextInt()) {
+                            System.out.println("整数を入力してください。");
+                            scanner.next(); // 不正なトークンを捨てる
+                            continue;
+                        }
+                        x = scanner.nextInt();
+
+                        if (!scanner.hasNextInt()) {
+                            System.out.println("整数を入力してください。");
+                            scanner.next();
+                            continue;
+                        }
+                        y = scanner.nextInt();
+
+                        // 範囲チェック
+                        if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) {
+                            System.out.println("座標は0から7の間で入力してください。");
+                            continue;
+                        }
+
+                        // 設置可能かチェック
+                        if (validMoves[x][y] != CANPLACE) {
+                            System.out.println("その位置には置けません。別の場所を選んでください。");
+                            continue;
+                        }
+
+                        // ここまで来たら有効な入力
+                        break;
+
+                    } catch (Exception e) {
+                        System.out.println("入力にエラーが発生しました。もう一度入力してください。");
+                        scanner.nextLine(); // 入力バッファをクリア
+                    }
+                }
 
                 othello.makeMove(x, y, turn);
 
