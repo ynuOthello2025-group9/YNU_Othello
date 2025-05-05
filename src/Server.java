@@ -1,8 +1,5 @@
 import java.net.ServerSocket; 
 import java.net.Socket;
-
-import javax.sound.midi.Receiver;
-
 import java.io.InputStreamReader; 
 import java.io.BufferedReader; 
 import java.io.PrintWriter; 
@@ -26,7 +23,8 @@ public class Server {
         private InputStreamReader sisr; //受信データ用文字ストリーム 
         private BufferedReader br; //文字ストリーム用のバッファ
         private Integer clientNo; //プレイヤを識別するための番号
-
+        private long lastHeartbeatTime; // 最後のPING受信時間
+        private static final int TIMEOUT_MILLIS = 30_000; // 30秒
 
         // 内部クラスReceiverのコンストラクタ 
         Receiver (Socket socket, Integer clientNo){ 
@@ -34,6 +32,7 @@ public class Server {
 				this.clientNo = clientNo; //プレイヤ番号を渡す
 				sisr = new InputStreamReader(socket.getInputStream());
 				br = new BufferedReader(sisr);
+                lastHeartbeatTime = System.currentTimeMillis(); // 初期化
 			} catch (IOException e) {
 				System.err.println("データ受信時にエラーが発生しました: " + e);
 			}
@@ -43,19 +42,31 @@ public class Server {
         public void run(){
 			try{
 				while(true) {// データを受信し続ける
-					Integer[] inputLine = br.readLine();//データを一行分読み込む
-                    //データの受信方法要確認
+                    // タイムアウトチェック
+                    if (System.currentTimeMillis() - lastHeartbeatTime > TIMEOUT_MILLIS) {
+                        System.err.println("プレイヤ " + clientNo + " がタイムアウトしました。接続を切断します。");
+                        online[clientNo] = false;
+                        break; // スレッド終了
+                    }
 
-					if (inputLine != null){ //データを受信したら
-						forwardMessage(inputLine, clientNo); //もう一方に転送する
-					}
-				}
-			} catch (IOException e){ // 接続が切れたとき
+					if (br.ready()) {
+                        String inputLine = br.readLine();
+                        if (inputLine != null) {
+                            if (inputLine.equals("PING")) {
+                                // ハートビート受信
+                                lastHeartbeatTime = System.currentTimeMillis();
+                            } else {
+                                // 通常のゲームメッセージ
+                                forwardMessage(inputLine, clientNo);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) { // 接続が切れたとき
 				System.err.println("プレイヤ " + clientNo + "との接続が切れました．");
 				online[clientNo] = false; //プレイヤの接続状態を更新する
-				printStatus(); //接続状態を出力する
-			}
-		}
+            }
+        }
     }
 
 
@@ -64,66 +75,84 @@ public class Server {
 		try {
 			System.out.println("サーバが起動しました．");
 			ServerSocket ss = new ServerSocket(port); //サーバソケットを用意
-			Integer clientNo = 1; //接続クライアント数1からスタート
+			Integer clientNo = 0; //接続クライアント数0からスタート
             String playerName[] = new String[2];
             String color[] = new String[2];
             
-            while (clientNo < 3) {
+            while (clientNo < 2) {
 				Socket socket = ss.accept(); //新規接続を受け付ける
                 System.out.println("プレイヤ " + clientNo + " が接続しました。");
+                
+                BufferedReader nameReader = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream())
+                );
+                playerName[clientNo] = nameReader.readLine(); // プレイヤー名を受信
+                System.out.println("プレイヤ " + clientNo + " の名前: " + playerName[clientNo]);
                 
                 out[clientNo] = new PrintWriter(socket.getOutputStream(), true); //データ送信用ストリーム
                 receiver[clientNo] = new Receiver(socket, clientNo); //データ受信用スレッド
                 receiver[clientNo].start(); //スレッドを開始
                 online[clientNo] = true; //オンライン状態を記録
-                printStatus(); //現在の状態を表示
-
-                receivePlayerName(playerName[clientNo]);//プレイヤー名取得
                 
                 color[clientNo] = decideColor(clientNo); //先手・後手を決定
                 
                 clientNo = clientNo + 1;
             }
 
-            clientNo = 1;
-            while(clientNo < 3){
-                sendPlayerName(playerName[clientNo]);
-                sendColor(color[clientNo]);
+            sendPlayerName(playerName[0], playerName[1]);
+            sendColor(color[0], color[1]);
 
-                clientNo = clientNo + 1;
-            }
+            
 		} catch (Exception e) {
 			System.err.println("ソケット作成時にエラーが発生しました: " + e);
 		}
 	}
 
-    public void printStatus(){ //クライアント接続状態の確認
-	}
-
     public void receivePlayerName(String playerName){
-
+        // ★acceptClientメゾットで直接実装してみました。このメゾットいらないかも。
     }
 
-    public void sendPlayerName(String playerName){
-
+    public void sendPlayerName(String playerName1, String playerName2){//★引数を2つにしました。
+        // プレイヤー0にプレイヤー1の名前を送信
+        if (out[0] != null && online[0]) {
+            out[0].println("OPPONENT:" + playerName2); // "OPPONENT:" をつけて明示
+        }
+        // プレイヤー1にプレイヤー0の名前を送信
+        if (out[1] != null && online[1]) {
+            out[1].println("OPPONENT:" + playerName1);
+        }
     }
 
     public String decideColor(Integer clientNo){
-        if (clientNo == 1){
+        if (clientNo == 0){
             return "黒";
-        } else if (clientNo == 2){
+        } else if (clientNo == 1){
             return "白";
         } else {
             return "エラー";
         }
     }
 
-    public void sendColor(String color){
+    public void checkTimeout(){ //クライアント接続状態の確認
+        //★Receiverクラスで直接実装してみました。そっちの方が簡略化できそうだからこのメゾットいらないかも。
+	}
 
+    public void sendColor(String color1, String color2){//★引数を2つにしました。
+        // プレイヤー0に自分の色を送信
+        if (out[0] != null && online[0]) {
+            out[0].println("YOUR COLOR:" + color1); // "YOUR COLOR:" をつけて明示
+        }
+        // プレイヤー1に自分の色を送信
+        if (out[1] != null && online[1]) {
+            out[1].println("YOUR COLOR:" + color2);
+        }
     }
 
-    public void forwardMessage(Integer[] msg, Integer clientNo){
-
+    public void forwardMessage(String msg, Integer clientNo){//★転送データの型をStringにしてみました。
+        int opponent = 1 - clientNo;
+        if (out[opponent] != null && online[opponent]) {
+            out[opponent].println(msg);
+        }
     }
 
     public static void main(String[] args){ //main
@@ -131,4 +160,5 @@ public class Server {
 		server.acceptClient(); //クライアント受け入れを開始
 	}
 }
+
 
