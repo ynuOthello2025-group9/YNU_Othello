@@ -76,7 +76,7 @@ cardLayout = new CardLayout();
     //panel1.setBackground(bgColor);
     //panel2.setBackground(bgColor);
     //panel3.setBackground(bgColor);
-    panel4.setBackground(bgColor);
+    //panel4.setBackground(bgColor);
 
     // add to card layout
     panel.add(panel1, "mainscreen");
@@ -84,21 +84,10 @@ cardLayout = new CardLayout();
     panel.add(panel3,"playerchoicescreen");
     panel.add(panel4,"gamescreen");
 
-    cardLayout.show(panel,"gamescreen");
+    cardLayout.show(panel,"mainscreen");
 
     // Add to frame
     add(panel);
-
-// creating main screen
-
-// creating cpu choose screen
-
-  // creating login screen
-
-  // game screen
-  
-  // dialogue pop up 
-
 
   setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   setSize(1000, 650);
