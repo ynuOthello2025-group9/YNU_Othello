@@ -95,8 +95,8 @@ public class CPU {
         return !opponentHasMove; // 両者とも合法手がない場合に終了
     }
 
-    // negamax法による探索メソッド
-    private int negamax(Integer[][] board, int depth, int color) {
+    // negaalpha法による探索メソッド
+    private int negaalpha(Integer[][] board, int depth, int color, int alpha, int beta) {
         if (depth == 0 || isGameOver(board)) {
             return color * evaluate(board); // 葉ノードでは評価値を返す（符号調整）
         }
@@ -116,10 +116,9 @@ public class CPU {
             for (int i = 0; i < 8; i++) {
                 tempBoard[i] = board[i].clone();
             }
-            return -negamax(tempBoard, depth, -color); // パス後の相手のスコアを反転
+            return -negaalpha(tempBoard, depth, -color, -beta, -alpha); // パス後の相手のスコアを反転
         }
 
-        int bestScore = Integer.MIN_VALUE;
         for (int[] move : possibleMoves) {
             Integer[][] tempBoard = new Integer[8][8];
             for (int i = 0; i < 8; i++) {
@@ -127,14 +126,17 @@ public class CPU {
             }
 
             Othello.makeMove(tempBoard,move[0], move[1], turn);
-            int score = -negamax(tempBoard, depth - 1, -color);
-            bestScore = Math.max(bestScore, score);
+            int score = -negaalpha(tempBoard, depth - 1, -color, -beta, -alpha);
+            alpha = Math.max(alpha, score);
+            if(alpha >= beta) {
+                break; // 枝狩り
+            }
         }
 
-        return bestScore;
+        return alpha;
     }
 
-    // 操作を決定するアルゴリズム(現在：negamax法DEPTH手読み)
+    // 操作を決定するメソッド
     private int[] decideMove(Integer[][] board) {
         // 置ける場所をリストアップ
         ArrayList<int[]> possibleMoves = new ArrayList<>();
@@ -165,7 +167,7 @@ public class CPU {
             // 仮に石を置く
             Othello.makeMove(tempBoard,move[0], move[1], turn);
             // 評価値を計算
-            int score = -negamax(tempBoard, DEPTH - 1, -color);
+            int score = -negaalpha(tempBoard, DEPTH - 1, -color, Integer.MIN_VALUE, Integer.MAX_VALUE);
             // 最善手更新
             if (score > bestScore) {
                 bestScore = score;
