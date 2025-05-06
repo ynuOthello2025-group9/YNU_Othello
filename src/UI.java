@@ -55,7 +55,7 @@ JPanel panel4_opp;
 JPanel panel4_board;
 JPanel panel4_top;
 JPanel panel4_bottom;
-JButton gamescreen_button_buttonarray[];
+JButton gamescreen_button_buttonarray[][];
 JLabel gamescreen_label_playername;
 JLabel gamescreen_label_playerpiece;
 JLabel gamescreen_label_playerpiececount;
@@ -352,14 +352,16 @@ public void loginScreen(){
     JPanel panel4_board_offset=new JPanel();
     panel4_board_offset.setLayout(new GridLayout(8,8));
     panel4_board_offset.setPreferredSize(new Dimension(480, 480));
-    gamescreen_button_buttonarray = new JButton[64];
-    for (int i = 0; i < 64; i++) {
-        gamescreen_button_buttonarray[i] = new JButton();
-        gamescreen_button_buttonarray[i].setPreferredSize(new Dimension(60, 60));
-        panel4_board_offset.add(gamescreen_button_buttonarray[i]); 
-        gamescreen_button_buttonarray[i].addActionListener(this);
-        gamescreen_button_buttonarray[i].setActionCommand(Integer.toString(i));// y=i/8, x=i%8
-        
+    gamescreen_button_buttonarray = new JButton[8][8];
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; i < 8; i++){
+        gamescreen_button_buttonarray[i][j] = new JButton();
+        gamescreen_button_buttonarray[i][j].setText(" ");
+        gamescreen_button_buttonarray[i][j].setPreferredSize(new Dimension(60, 60));
+        panel4_board_offset.add(gamescreen_button_buttonarray[i][j]); 
+        gamescreen_button_buttonarray[i][j].addActionListener(this);
+        gamescreen_button_buttonarray[i][j].setActionCommand(Integer.toString(i)+","+Integer.toString(j));// y=i/8, x=i%8
+        }   
     }
     panel4_board.add(panel4_board_offset);
 
@@ -424,24 +426,61 @@ public void loginScreen(){
   // to update player info
   public void updatePlayerInfo(String playerName,String playerColor){
     gamescreen_label_playername.setText(playerName);
-   // gamescreen_label_p
+    gamescreen_label_playerpiece.setText(playerColor);
 
   }
 
   // to update opp info
   public void updateOpponentInfo(String oppName,String oppColor){
-
+    gamescreen_label_oppname.setText(oppName);
+    gamescreen_label_opppiece.setText(oppColor);
   }
 
   // to update turn player
   public void updateTurnLabel(String turnPlayer){
+    gamescreen_label_turnplayer.setText(turnPlayer);
+  }
 
+  // to update opp piece count
+  public void updateOpponentPieceCount(int oppPieceCount){
+    gamescreen_label_opppiececount.setText(oppPieceCount + "枚");
+  }
+
+  // to update player piece count
+  public void updatePlayerPieceCount(int playerPieceCount){
+    gamescreen_label_playerpiececount.setText(playerPieceCount + "枚");
   }
 
   // to disable/enable board
   public void enableBoardInput(boolean state){
-
+    for (int i = 0; i < 8; i++){
+        for(int j=0;i<8;i++){
+            gamescreen_button_buttonarray[i][j].setEnabled(state);
+        }
+        
+    }
+    gamescreen_button_surrender.setEnabled(state);
   }
 
-}
+  // back to main screen
+  public void showMainScreen(){
+    cardLayout.show(panel,"mainscreen");
+  }
+
+  // update board
+  public void updateBoard(int board[][]){
+    for(int i=0;i<8;i++){
+        for(int j=0;j<8;j++){
+            if(board[i][j]==1){
+                gamescreen_button_buttonarray[i][j].setText("黒"); // change to image later
+            }else if(board[i][j]==2){
+                gamescreen_button_buttonarray[i][j].setText("白"); // change to image later
+            }
+        }
+    }
+  }
+
+  // highlight vald moves
+  //public void highlightValidMoves()
+//}
 
