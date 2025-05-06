@@ -13,7 +13,7 @@ public class Othello {
 
     // テスト用
     private static Integer[][] testBoard = new Integer[SIZE][SIZE]; // 盤面(テスト用)
-    private static Integer[][] testValidMoves = new  Integer[SIZE][SIZE];
+    private static Integer[][] testValidMoves = new Integer[SIZE][SIZE];
     private static String testTurn;
     static Scanner scanner = new Scanner(System.in);
 
@@ -22,7 +22,6 @@ public class Othello {
         initBoard(tempBoard); // 盤面の初期化
         initTurn(turn);
     }
-
 
     // 盤面初期化メソッド
     public static void initBoard(Integer[][] tempBoard) {
@@ -42,8 +41,8 @@ public class Othello {
         System.out.println("Board is initialized.");
     }
 
-    //テスト用
-    public static String initTurn(String turn){
+    // テスト用
+    public static String initTurn(String turn) {
         turn = "Black";
 
         return turn;
@@ -55,7 +54,7 @@ public class Othello {
             return "White";
         } else if (turn == "White") {
             return "Black";
-        }else {
+        } else {
             return "error";
         }
     }
@@ -71,23 +70,23 @@ public class Othello {
         return turn;
     }
 
-    public static Integer[][] getBoard(Integer[][] tempBoard, Integer[][] validMoves){
+    public static Integer[][] getBoard(Integer[][] tempBoard, Integer[][] validMoves) {
         Integer currentBoard[][] = new Integer[SIZE][SIZE];
 
-        for(int x = 0; x < SIZE; x++){
-            for(int y = 0; y < SIZE; y++){
-                if(validMoves[x][y] != CANPLACE){
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                if (validMoves[x][y] != CANPLACE) {
                     currentBoard[x][y] = tempBoard[x][y];
-                }else{
+                } else {
                     currentBoard[x][y] = CANPLACE;
                 }
             }
         }
-        
+
         return currentBoard;
     }
 
-    //テスト用盤面表示メソッド
+    // テスト用盤面表示メソッド
     public static void printBoard(Integer[][] tempBoard, Integer[][] validMoves) {
         System.out.print("  ");
         for (int i = 0; i < SIZE; i++)
@@ -102,7 +101,7 @@ public class Othello {
                         continue;
                     }
                 }
-    
+
                 if (tempBoard[i][j] == EMPTY) {
                     System.out.print(" " + " ");
                 } else if (tempBoard[i][j] == BLACK) {
@@ -110,16 +109,16 @@ public class Othello {
                 } else if (tempBoard[i][j] == WHITE) {
                     System.out.print("●" + " ");
                 }
-    
+
             }
             System.out.println();
         }
     }
 
-    //あるマスが設置可能かどうかを判定するメソッド
-    public static boolean isValidMove(Integer[][] tempBoard, int x, int y, String turn){
+    // あるマスが設置可能かどうかを判定するメソッド
+    public static boolean isValidMove(Integer[][] tempBoard, int x, int y, String turn) {
 
-        if(tempBoard[x][y] != 0){
+        if (tempBoard[x][y] != 0) {
             return false;
         }
 
@@ -130,8 +129,8 @@ public class Othello {
         // 設置場所について8方向においてそれぞれ確認するための8方向
         int[][] directions = {
                 { -1, -1 }, { -1, 0 }, { -1, 1 },
-                { 0, -1 },             { 0, 1 },
-                { 1, -1 },  { 1, 0 },  { 1, 1 }
+                { 0, -1 }, { 0, 1 },
+                { 1, -1 }, { 1, 0 }, { 1, 1 }
         };
 
         // 空きマスにおいて8方向それぞれを見ていく
@@ -156,10 +155,32 @@ public class Othello {
         return false;
     }
 
-    public static boolean hasValidMove(Integer[][] tempBoard, String turn){
-        for(int i = 0; i < SIZE; i++){
-            for(int j = 0; j < SIZE; j++){
-                if(isValidMove(tempBoard, i, j, turn)){
+    public static int numberOfStone(Integer[][] tempBoard, int color) {
+
+        int num = 0;
+
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (tempBoard[i][j] == color) {
+                    num++;
+                }
+            }
+        }
+
+        return num;
+    }
+
+    public static boolean hasValidMove(Integer[][] tempBoard, String turn) {
+
+        int color = (turn == "Black") ? BLACK : WHITE;
+
+        if (numberOfStone(tempBoard, color) == 0) {
+            return false;
+        }
+
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (isValidMove(tempBoard, i, j, turn)) {
                     return true;
                 }
             }
@@ -182,7 +203,7 @@ public class Othello {
         // 各マス目において
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
-                if(isValidMove(tempBoard, x, y, turn)){
+                if (isValidMove(tempBoard, x, y, turn)) {
                     validMoves[x][y] = CANPLACE; // 設置可能
                 }
             }
@@ -193,13 +214,13 @@ public class Othello {
 
     // 色に応じて石の設置可能場所を配列形式で返すメソッド
     public static List<int[]> getValidMovesArray(Integer tempBoard[][], String turn) {
-        
+
         List<int[]> validMoves = new ArrayList<>();
 
         // 各マス目において
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
-                if(isValidMove(tempBoard, x, y, turn)){
+                if (isValidMove(tempBoard, x, y, turn)) {
                     validMoves.add(new int[] { x, y });
                 }
             }
@@ -254,10 +275,10 @@ public class Othello {
         }
     }
 
-
     // こっちで設置可能場所を取得できるから相手の入力関係なく判断しても良いっちゃいい
     // 自分がパスになったときに作用する、終了判定メソッド（置けないときはint[2] = {-1, -1}でいいんだっけ）
     public static boolean isFinished(int[] opponentMove) {
+
         // 相手もパスだった時に終了するという考え
         if (opponentMove[0] == -1 && opponentMove[1] == -1) {
             return true;
@@ -295,7 +316,7 @@ public class Othello {
 
     }
 
-    //テスト実行用
+    // テスト実行用
     public static void main(String[] args) {
 
         // ↓2行にするかこっちか
@@ -340,7 +361,7 @@ public class Othello {
                         }
 
                         // 設置可能かチェック
-                        if (testValidMoves[x][y] != CANPLACE) {
+                        if (!(isValidMove(testBoard, x, y, testTurn))) {
                             System.out.println("その位置には置けません。別の場所を選んでください。");
                             continue;
                         }
@@ -358,22 +379,21 @@ public class Othello {
 
             } else {
                 System.out.println(testTurn + "はパスします。");
-                testValidMoves = getValidMovesBoard(testBoard, opponent(testTurn));
-                if (!(hasValidMove(testValidMoves, opponent(testTurn)))){
+
+                if (!(hasValidMove(testBoard, opponent(testTurn)))) {
                     break;
                 }
+
                 // if (isFinished(opponentMove[]))
-                //     break;
+                // break;
             }
 
             testTurn = changeTurn(testTurn);
         }
 
-        
-        //一応ここではvalidMovesはいらない
+        // 一応ここではvalidMovesはいらない
         printBoard(testBoard, testValidMoves);
         judgeWinner(testBoard);
 
     }
-
 }
