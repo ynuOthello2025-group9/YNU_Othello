@@ -4,10 +4,6 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 public class UI extends JFrame implements ActionListener {
-
-    // --- Clientクラスへの参照 (前回の回答で追加した部分) ---
-    private Client userClient;
-  
 CardLayout cardLayout;
 JPanel panel;
 Color bgColor = new Color(200, 220, 255);
@@ -66,9 +62,9 @@ JLabel gamescreen_label_turnplayer;
 JButton gamescreen_button_surrender;
 
 
-public UI(String title, Client userClient){
+public UI(String title, Client client){
     super(title);
-    this.userClient = userClient;
+    this.client = client;
     System.out.println("test");
     cardLayout = new CardLayout();
     panel = new JPanel(cardLayout);
