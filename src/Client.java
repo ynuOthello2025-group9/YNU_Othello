@@ -2,7 +2,6 @@ import java.io.*;
 import java.net.*;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.JFrame;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Arrays;
@@ -15,6 +14,7 @@ public class Client {
     private PrintWriter out;
     private BufferedReader in;
     private Player player;
+    private Player oponent;
     private UI ui; // UIクラスへの参照
     private Receiver receiver;
     private Timer heartbeatTimer;
@@ -188,16 +188,16 @@ public class Client {
                 opponentName = message.substring("OPPONENT:".length());
                 System.out.println("Opponent name set: " + opponentName);
                 // UI更新 (相手プレイヤー名表示)
-                // TODO: SwingUtilities.invokeLater(() -> ui.updateOpponentInfo(opponentName, player.getOpponentColor()));
+                SwingUtilities.invokeLater(() -> ui.updateOpponentInfo(opponentName, player.getOpponentColor()));
 
             } else if (message.startsWith("YOUR COLOR:")) {
                 String color = message.substring("YOUR COLOR:".length());
                 player.setStoneColor(color);
                  System.out.println("My color set: " + color);
                  // UI更新 (自分のプレイヤー名と色表示)
-                 // TODO:SwingUtilities.invokeLater(() -> ui.updatePlayerInfo(player.getPlayerName(), player.getStoneColor()));
+                 SwingUtilities.invokeLater(() -> ui.updatePlayerInfo(player.getPlayerName(), player.getStoneColor()));
                  // 相手の色も設定（自分の色と逆）
-                 // TODO:SwingUtilities.invokeLater(() -> ui.updateOpponentInfo(opponentName, player.getOpponentColor()));
+                 SwingUtilities.invokeLater(() -> ui.updateOpponentInfo(opponentName, player.getOpponentColor()));
 
 
             } else if (message.startsWith("UPDATE:")) {
@@ -211,9 +211,10 @@ public class Client {
                  gameStarted = true; // 自分のターン通知が来たらゲーム開始とみなす
                  // UI更新 (自分のターン表示、操作可能にするなど)
                  SwingUtilities.invokeLater(() -> {
-                    if(ui == null) return;
-                    // TODO: ui.updateTurnLabel(player.getPlayerName()); // 自分の名前でターン表示更新
-                    // TODO: ui.enableBoardInput(true); // ボード操作を有効化
+                    if(ui != null){
+                        ui.updateTurnLabel(player.getPlayerName()); // 自分の名前でターン表示更新
+                        ui.enableBoardInput(true); // ボード操作を有効化
+                    }
                  });
                  // 配置可能なマスをUIに表示させる処理（必要なら）
                  // Othello othello = new Othello(); // Othelloクラスの利用方法に依存
@@ -227,8 +228,8 @@ public class Client {
                  // UI更新 (相手のターン表示、操作不能にするなど)
                  SwingUtilities.invokeLater(() -> {
                     if(ui != null){
-                        // TODO: ui.updateTurnLabel(opponentName); // 相手の名前でターン表示更新
-                        // TODO: ui.enableBoardInput(false); // ボード操作を無効化
+                        ui.updateTurnLabel(opponentName); // 相手の名前でターン表示更新
+                        ui.enableBoardInput(false); // ボード操作を無効化
                     }
                  });
 
@@ -309,10 +310,10 @@ public class Client {
                     } else {
                         turnPlayerName = opponentName;
                     }
-                    // TODO:ui.updateTurnLabel(turnPlayerName);
+                    ui.updateTurnLabel(turnPlayerName);
                  } else {
                      // 色情報がまだ来ていない場合（念のため）
-                    // TODO: ui.updateTurnLabel("?");
+                    ui.updateTurnLabel("?");
                  }
 
 
@@ -410,10 +411,10 @@ public class Client {
          String passMessage = passedPlayerName + " がパスしました。";
          System.out.println(passMessage);
          // UIにメッセージ表示 (例: JOptionPane やステータスバー)
-         SwingUtilities.invokeLater(() ->
-            System.out.println("test")
-            // JOptionPane.showMessageDialog(ui, passMessage, "パス情報", JOptionPane.INFORMATION_MESSAGE)
-             // TODO:ui.showTemporaryMessage(passMessage) // UIに一時メッセージ表示メソッドがあると仮定
+         SwingUtilities.invokeLater(() ->{
+            JOptionPane.showMessageDialog(ui, passMessage, "パス情報", JOptionPane.INFORMATION_MESSAGE);
+            //Todo: ui.showTemporaryMessage(passMessage) // UIに一時メッセージ表示メソッドがあると仮定
+         }
          );
      }
 
@@ -455,7 +456,7 @@ public class Client {
                  JOptionPane.showMessageDialog(ui, message, "接続エラー", JOptionPane.ERROR_MESSAGE);
                  // 必要であればUIを初期画面に戻すなどの処理を追加
                  // ui.showMainScreen();
-                // TODO: ui.resetUI(); // UIリセットメソッドがあると仮定
+                // ui.resetUI(); // UIリセットメソッドがあると仮定
              });
         }
     }
