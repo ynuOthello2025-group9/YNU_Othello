@@ -128,7 +128,7 @@ public class CPU {
     private int negaalpha(Integer[][] board, int depth, int color, int alpha, int beta) {
         try {
             String indent = "  ".repeat(this.depth - depth);
-            System.out.println(indent + "Entering depth: " + depth + ", Color: " + (color == 1 ? "black" : "white")
+            System.out.println(indent + "Entering depth: " + depth + ", Color: " + (color == 1 ? "Black" : "White")
                     + ", Alpha: " + alpha + ", Beta: " + beta);
             if (depth == 0 || isGameOver(board)) {
                 int eval = color * evaluate(board);
@@ -147,9 +147,19 @@ public class CPU {
 
             if (possibleMoves.isEmpty()) {
                 System.out.println(indent + "No valid moves, passing.");
+                // 盤面を表示
+                for(int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        System.out.print(board[i][j] + " ");
+                    }
+                    System.out.println();
+                }
                 Integer[][] tempBoard = new Integer[8][8];
                 for (int i = 0; i < 8; i++) {
                     tempBoard[i] = board[i].clone();
+                }
+                if(isGameOver(board)){
+                    return color * evaluate(tempBoard); // ゲーム終了時の評価値を返す
                 }
                 int score = -negaalpha(tempBoard, depth, -color, -beta, -alpha);
                 System.out.println(indent + "Pass result, Score: " + score);
