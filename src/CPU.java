@@ -3,11 +3,11 @@ import java.util.ArrayList;
 public class CPU {
     private String turn; // 先手後手
     private String level; // 強さ（3段階）
+    private int depth; // 探索の深さ
 
     // 定数
     private static final int N_LINE = 8; // 行数
     private static final int LINE_PATTERN = 6361; // 各行の可能なパターン数（3^8）
-    private static final int DEPTH = 3; // 探索深さ（3手先読み）
 
     // 各マスの評価値
     private static final int[] CELL_WEIGHT = {
@@ -29,6 +29,7 @@ public class CPU {
     public CPU(String turn, String level) {
         this.turn = turn;
         this.level = level;
+        depthInit();
         evaluateInit();
     }
 
@@ -45,6 +46,24 @@ public class CPU {
             // 置ける場所がない場合
             System.out.println("CPU: 置ける場所がありません。");
             return new int[] { -1, -1 }; // パスの場合
+        }
+    }
+
+    // depthの初期化
+    private void depthInit() {
+        switch (level) {
+            case "easy":
+                this.depth = 1;
+                break;
+            case "normal":
+                this.depth = 3;
+                break;
+            case "hard":
+                this.depth = 5;
+                break;
+            default:
+                this.depth = 3;
+                break;
         }
     }
 
@@ -167,7 +186,7 @@ public class CPU {
             // 仮に石を置く
             Othello.makeMove(tempBoard,move[0], move[1], turn);
             // 評価値を計算
-            int score = -negaalpha(tempBoard, DEPTH - 1, -color, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            int score = -negaalpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE, Integer.MAX_VALUE);
             // 最善手更新
             if (score > bestScore) {
                 bestScore = score;
