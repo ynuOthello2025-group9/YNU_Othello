@@ -307,6 +307,10 @@ public class Client {
                  return;
             }
             sendMoveToServer(row, col); // サーバーに送信
+            Othello.makeMove(boardState, row, col, toOthelloColor(currentTurn));
+            updateBoardAndUI(boardState);
+            updateStatusAndUI(currentTurn, "あなた が ("+ row + "," + col + ") に置きました。", playerName);
+
 
         } else {
             // === CPU対戦 ===
@@ -465,30 +469,40 @@ public class Client {
         SwingUtilities.invokeLater(() -> {
             if (!isNetworkMatch && !command.equals("ERROR")) return;
 
+            System.out.println("Processing command: " + command + ", Value: " + value);
+
             switch (command) {
                 case "YOUR COLOR":
                     playerColor = value;
                     updateStatusAndUI(currentTurn, "あなたは " + playerColor + " です。", opponentName);
+                    // ★ 最初のターンを決定 (黒が先手)
+                    currentTurn = "黒";
+                    opponentName = "?"; // 相手の名前はまだ不明
+                    updateStatusAndUI(currentTurn, getTurnMessage(), opponentName); // 最初のターン表示
                     break;
                 case "OPPONENT":
                     opponentName = value;
-                    updateStatusAndUI(currentTurn, "対戦相手: " + opponentName, opponentName);
-                    break;
-                case "BOARD":
-                    updateBoardFromString(value); // boardStateを更新
-                    updateBoardAndUI(null); // UIに反映 (引数はnullでOK)
-                    break;
-                case "TURN":
-                    currentTurn = value;
+                    System.out.println("Opponent set to: " + opponentName);
+                    // 相手が決まったことを反映 (ターン表示は BOARD 受信時に更新される)
                     updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
                     break;
+                case "MOVE":
+                    updateBoardFromString(value);
+                    updateBoardAndUI(null);       // UIに反映
+                    // ★★★ 盤面更新後に次のターンを決定 ★★★
+                    determineNextTurnAndUpdateStatus();
+                    break;
                 case "MESSAGE":
+                    // サーバーからの補助メッセージ（例：「相手がパスしました」）
+                    // パスメッセージを受け取ったら、ターン決定ロジックを再実行しても良い
+                    if (value.contains("パスしました")) {
+                         System.out.println("Received pass message from server.");
+                         // determineNextTurnAndUpdateStatus(); // 再度ターンを確認・更新
+                    }
                     updateStatusAndUI(currentTurn, value, opponentName);
                     break;
                 case "GAMEOVER":
-                    // サーバーからのゲームオーバー通知
-                    // value には "勝敗 [スコア]" が入っている想定
-                    processGameEnd(value, "Server"); // サーバーからの通知として処理
+                    processGameEnd(value, "Server");
                     break;
                 case "ERROR":
                     System.err.println("Server Error: " + value);
@@ -496,24 +510,78 @@ public class Client {
                     JOptionPane.showMessageDialog(screenUpdater, "サーバーエラー:\n" + value, "エラー", JOptionPane.ERROR_MESSAGE);
                     break;
                 default:
-                    System.out.println("Unknown command: " + command);
+                    System.out.println("Unknown command from server: " + command);
             }
         });
+    }
+    /**
+     * 盤面状態に基づいて次のターンを決定し、UIステータスを更新する
+     */
+    private void determineNextTurnAndUpdateStatus() {
+        if (!gameActive || !isNetworkMatch) return;
+
+        String previousTurn = currentTurn; // 判定前のターンを保持
+        String nextTurn = determineNextTurnLogic(); // 次のターンを計算
+
+        if (nextTurn == null) {
+            // ゲーム終了のケース (両者打てない)
+            // processGameEnd はサーバーからの GAMEOVER を待つか、
+            // あるいはここでクライアント判断で終了させることも可能
+            System.out.println("Client determined: Game Over (no valid moves). Waiting for server confirmation.");
+            // 必要ならステータスを「ゲーム終了」などに更新
+            // updateStatusAndUI("ゲーム終了", "打てる手がありません。", opponentName);
+        } else {
+            // ターンを設定
+            currentTurn = nextTurn;
+            // UIステータスを更新
+            updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
+            // デバッグ用ログ
+            if (!currentTurn.equals(previousTurn)) {
+                 System.out.println("Client determined turn: " + currentTurn);
+            } else {
+                 System.out.println("Client determined turn remains: " + currentTurn);
+            }
+        }
+    }
+    /**
+     * 現在の盤面状態(this.boardState)から、次の手番の色("黒" or "白")を計算する。
+     * 両者打てない場合は null を返す。
+     */
+    private String determineNextTurnLogic() {
+        // Othelloクラスの色表現 ("Black"/"White") に変換して判定
+        String currentOthelloColor = toOthelloColor(currentTurn);
+        String opponentOthelloColor = currentOthelloColor.equals("Black") ? "White" : "Black";
+
+        boolean opponentCanMove = Othello.hasValidMove(boardState, opponentOthelloColor);
+
+        if (opponentCanMove) {
+            // 通常通り相手のターン
+            return fromOthelloColor(opponentOthelloColor);
+        } else {
+            // 相手が打てない場合、自分が打てるか確認（パスされた状況）
+            boolean selfCanMove = Othello.hasValidMove(boardState, currentOthelloColor);
+            if (selfCanMove) {
+                // 自分が打てるので、自分のターンが続く
+                System.out.println("Opponent cannot move, current player continues."); // ログ追加
+                return currentTurn; // 自分の色を返す
+            } else {
+                // 自分も相手も打てない -> ゲーム終了
+                System.out.println("Neither player can move."); // ログ追加
+                return null; // ゲーム終了を示すnullを返す
+            }
+        }
     }
 
     /**
      * 盤面文字列からboardStateを更新
      */
     private void updateBoardFromString(String boardStr) {
-        if (boardStr.length() == SIZE * SIZE) {
-            for (int i = 0; i < SIZE; i++) {
-                for (int j = 0; j < SIZE; j++) {
-                    char c = boardStr.charAt(i * SIZE + j);
-                    // '0', '1', '2' を Integer に変換
-                    boardState[i][j] = Character.getNumericValue(c);
-                }
-            }
-             System.out.println("Board state updated from server.");
+        if (boardStr.length() == 3) {
+            System.out.println("Board state updated from server."+  Character.getNumericValue(boardStr.charAt(0)));
+            Integer x = Character.getNumericValue(boardStr.charAt(0));
+            Integer y = Character.getNumericValue(boardStr.charAt(2));
+            Othello.makeMove(boardState, x, y, "Black");
+            System.out.println("Board state updated from server.");
         } else {
             System.err.println("Received invalid board string length: " + boardStr.length());
         }
