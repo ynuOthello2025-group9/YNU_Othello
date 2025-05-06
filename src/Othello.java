@@ -71,8 +71,24 @@ public class Othello {
         return turn;
     }
 
+    public static Integer[][] getBoard(Integer[][] tempBoard, Integer[][] validMoves){
+        Integer currentBoard[][] = new Integer[SIZE][SIZE];
+
+        for(int x = 0; x < SIZE; x++){
+            for(int y = 0; y < SIZE; y++){
+                if(validMoves[x][y] != CANPLACE){
+                    currentBoard[x][y] = tempBoard[x][y];
+                }else{
+                    currentBoard[x][y] = CANPLACE;
+                }
+            }
+        }
+        
+        return currentBoard;
+    }
+
     //テスト用盤面表示メソッド
-    public static void printBoard(Integer[][] tempBoard, Integer[][] validMove) {
+    public static void printBoard(Integer[][] tempBoard, Integer[][] validMoves) {
         System.out.print("  ");
         for (int i = 0; i < SIZE; i++)
             System.out.print(i + " ");
@@ -81,7 +97,7 @@ public class Othello {
             System.out.print(i + " ");
             for (int j = 0; j < SIZE; j++) {
                 if (tempBoard[i][j] == EMPTY) {
-                    if (validMove[i][j] == CANPLACE) {
+                    if (validMoves[i][j] == CANPLACE) {
                         System.out.print("◎" + " ");
                         continue;
                     }
@@ -343,8 +359,9 @@ public class Othello {
             } else {
                 System.out.println(testTurn + "はパスします。");
                 testValidMoves = getValidMovesBoard(testBoard, opponent(testTurn));
-                if (!(hasValidMove(testValidMoves, opponent(testTurn))))
+                if (!(hasValidMove(testValidMoves, opponent(testTurn)))){
                     break;
+                }
                 // if (isFinished(opponentMove[]))
                 //     break;
             }
