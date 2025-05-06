@@ -130,12 +130,15 @@ public void actionPerformed(ActionEvent e) {
             
     }
 
-    int pre_move=Integer.parseInt(action);
-    int move[]={0,0};
-    move[0]=pre_move/8;
-    move[1]=pre_move%8;
-    client.sendMoveToServer(null);
-    
+    try {
+        int pre_move = Integer.parseInt(action);
+        int move[] = {0, 0};
+        move[0] = pre_move / 8;
+        move[1] = pre_move % 8;
+        client.sendMoveToServer(move); // ←nullではなくmoveにすべきと思われます
+    } catch (NumberFormatException ex) {
+        // 数字でない場合は無視
+    }
 }
 
 // creating main screen
