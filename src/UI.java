@@ -4,6 +4,9 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 public class UI extends JFrame implements ActionListener {
+
+    // --- Clientクラスへの参照 (前回の回答で追加した部分) ---
+    private Client userClient;
   
 CardLayout cardLayout;
 JPanel panel;
@@ -63,13 +66,11 @@ JLabel gamescreen_label_turnplayer;
 JButton gamescreen_button_surrender;
 
 
-//dialogue popup components
-public UI(String title,Client client){
-
-super(title);
-client=this.client;
-System.out.println("test");
-cardLayout = new CardLayout();
+public UI(String title, Client userClient){
+    super(title);
+    this.userClient = userClient;
+    System.out.println("test");
+    cardLayout = new CardLayout();
     panel = new JPanel(cardLayout);
 
     // create screens
@@ -95,7 +96,7 @@ cardLayout = new CardLayout();
 
   setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   setSize(1000, 650);
-  setVisible(true);	
+  setVisible(true); 
 }
 
 public void actionPerformed(ActionEvent e) {
@@ -140,6 +141,10 @@ public void actionPerformed(ActionEvent e) {
     client.sendMoveToServer(null);
     
 }
+
+    public void setClient(Client userClient){
+        this.userClient = userClient;
+    }
 
 // creating main screen
 public void mainScreen(){
@@ -321,8 +326,8 @@ public void loginScreen(){
 
     ImageIcon blackIcon, whiteIcon, boardIcon;
     whiteIcon = new ImageIcon("White.jpg");
-	blackIcon = new ImageIcon("Black.jpg");
-	boardIcon = new ImageIcon("GreenFrame.jpg");
+    blackIcon = new ImageIcon("Black.jpg");
+    boardIcon = new ImageIcon("GreenFrame.jpg");
 
     panel4=new JPanel();
     panel4.setLayout(new BorderLayout(10, 10));
@@ -438,18 +443,5 @@ public void loginScreen(){
 
   }
 
-
-
-
-public static void main(String[] args){
-
-
-Client client=new Client();
-UI ui=new UI("Othello",client);
-System.out.println(System.getProperty("user.dir"));
-
-
-
 }
 
-}
