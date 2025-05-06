@@ -13,6 +13,9 @@ JPanel panel;
 Color bgColor = new Color(200, 220, 255);
 Client client;
 boolean isVsCpu=true;
+ImageIcon whiteIcon = new ImageIcon("src\\resource\\White.jpg");
+ImageIcon blackIcon = new ImageIcon("src\\resource\\Black.jpg");
+ImageIcon boardIcon = new ImageIcon("src\\resource\\GreenFrame.jpg");
 
 
 // main screen components
@@ -103,9 +106,11 @@ public void actionPerformed(ActionEvent e) {
     String action=e.getActionCommand();
     switch(action){
         case "mainscreen_choseplayer":
+        gamescreen_button_surrender.setEnabled(false);
             cardLayout.show(panel,"playerchoicescreen");
             break;
         case "mainscreen_chosecpu":
+        isVsCpu=true;
             cardLayout.show(panel,"cpuchoicescreen");
             break;
         case "cpuchoicescreen_choseconfirm":
@@ -116,29 +121,26 @@ public void actionPerformed(ActionEvent e) {
                 isVsCpu=false;
                 gamescreen_button_surrender.setEnabled(false);
                 cardLayout.show(panel,"gamescreen");   
-            }else{
+            }else{// when cant connect 処理
                 cardLayout.show(panel,"playerchoicescreen");
             }
             break;   
         case "gamescreen_chosesurrender":
+            // also show the surrender window
             cardLayout.show(panel,"mainscreen");
             break;
-        case "cpuchoicescreen_chosefirst":
+        case "cpuchoicescreen_chosefirst"://highlight unhighlight, will go first
             cpuchoicescreen_button_gosecond.setBackground(null);
             cpuchoicescreen_button_gofirst.setBackground(Color.YELLOW);
+            cpuchoicescreen_button_confirm.setEnabled(true);
             break;
-        case "cpuchoicescreen_chosesecond":
+        case "cpuchoicescreen_chosesecond"://highlight unhiglight, will go second
             cpuchoicescreen_button_gofirst.setBackground(null);
             cpuchoicescreen_button_gosecond.setBackground(Color.YELLOW);
+            cpuchoicescreen_button_confirm.setEnabled(true);
             break;
             
     }
-
-    int pre_move=Integer.parseInt(action);
-    int move[]={0,0};
-    move[0]=pre_move/8;
-    move[1]=pre_move%8;
-    client.sendMoveToServer(null);
     
 }
 
@@ -224,6 +226,7 @@ public void cpuChoiceScreen(){
     cpuchoicescreen_label_vscpu.setFont(new Font("MS Gothic", Font.BOLD, 30));
     cpuchoicescreen_button_confirm=new JButton("決定");
     cpuchoicescreen_button_confirm.setFont(new Font("MS Gothic", Font.PLAIN, 25));
+    cpuchoicescreen_button_confirm.setEnabled(false);
     JButton[] buttons = {cpuchoicescreen_button_gofirst, cpuchoicescreen_button_gosecond};
     for (JButton b : buttons) {
         b.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -323,12 +326,6 @@ public void loginScreen(){
   public void gameScreen(){
 
     // layouts and stuffs
-
-    ImageIcon blackIcon, whiteIcon, boardIcon;
-    whiteIcon = new ImageIcon("White.jpg");
-    blackIcon = new ImageIcon("Black.jpg");
-    boardIcon = new ImageIcon("GreenFrame.jpg");
-
     panel4=new JPanel();
     panel4.setLayout(new BorderLayout(10, 10));
     panel4.setBorder(BorderFactory.createEmptyBorder(10, 35, 0, 35));
@@ -351,16 +348,16 @@ public void loginScreen(){
     panel4_board.setLayout(new FlowLayout());
     JPanel panel4_board_offset=new JPanel();
     panel4_board_offset.setLayout(new GridLayout(8,8));
-    panel4_board_offset.setPreferredSize(new Dimension(480, 480));
+    panel4_board_offset.setPreferredSize(new Dimension(320, 320));
     gamescreen_button_buttonarray = new JButton[8][8];
     for (int i = 0; i < 8; i++) {
-        for (int j = 0; i < 8; i++){
-        gamescreen_button_buttonarray[i][j] = new JButton();
-        gamescreen_button_buttonarray[i][j].setText(" ");
-        gamescreen_button_buttonarray[i][j].setPreferredSize(new Dimension(60, 60));
-        panel4_board_offset.add(gamescreen_button_buttonarray[i][j]); 
-        gamescreen_button_buttonarray[i][j].addActionListener(this);
-        gamescreen_button_buttonarray[i][j].setActionCommand(Integer.toString(i)+","+Integer.toString(j));// y=i/8, x=i%8
+        for (int j = 0; j < 8; j++){
+        gamescreen_button_buttonarray[j][i] = new JButton();
+        gamescreen_button_buttonarray[j][i].setIcon(boardIcon);
+        gamescreen_button_buttonarray[j][i].setPreferredSize(new Dimension(40, 40));// TODO: need to find better image (60x60)
+        panel4_board_offset.add(gamescreen_button_buttonarray[j][i]); 
+        gamescreen_button_buttonarray[j][i].addActionListener(this);
+        gamescreen_button_buttonarray[j][i].setActionCommand(Integer.toString(j)+","+Integer.toString(i));// 
         }   
     }
     panel4_board.add(panel4_board_offset);
@@ -370,6 +367,7 @@ public void loginScreen(){
     gamescreen_button_surrender=new JButton("退出");
     gamescreen_button_surrender.setPreferredSize(new Dimension(80,80));
     gamescreen_button_surrender.setFont(new Font("MS Gothic", Font.BOLD, 20));
+    gamescreen_button_surrender.setEnabled(false);
     gamescreen_label_turnplayer=new JLabel("dsadsadの番");
     gamescreen_label_turnplayer.setAlignmentX(Component.CENTER_ALIGNMENT);
     gamescreen_label_turnplayer.setFont(new Font("MS Gothic", Font.PLAIN, 30));
@@ -439,6 +437,7 @@ public void loginScreen(){
   // to update turn player
   public void updateTurnLabel(String turnPlayer){
     gamescreen_label_turnplayer.setText(turnPlayer);
+    gamescreen_button_surrender.setEnabled(true);
   }
 
   // to update opp piece count
@@ -462,19 +461,23 @@ public void loginScreen(){
     gamescreen_button_surrender.setEnabled(state);
   }
 
-  // back to main screen
+  // back to main screen, acts like a reset / 初期化 too
   public void showMainScreen(){
     cardLayout.show(panel,"mainscreen");
+    cpuchoicescreen_button_confirm.setEnabled(true);
+    gamescreen_button_surrender.setEnabled(false);
   }
 
   // update board
   public void updateBoard(int board[][]){
     for(int i=0;i<8;i++){
         for(int j=0;j<8;j++){
-            if(board[i][j]==1){
-                gamescreen_button_buttonarray[i][j].setText("黒"); // change to image later
+            if(board[j][i]==1){
+                gamescreen_button_buttonarray[i][j].setIcon(blackIcon); // change to image later
             }else if(board[i][j]==2){
-                gamescreen_button_buttonarray[i][j].setText("白"); // change to image later
+                gamescreen_button_buttonarray[i][j].setIcon(whiteIcon); // change to image later
+            }else if(board[j][i]==0){
+                gamescreen_button_buttonarray[i][j].setIcon(boardIcon);
             }
         }
     }
