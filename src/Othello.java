@@ -6,14 +6,15 @@ import java.util.Scanner;
 public class Othello {
     // 盤面に関する情報
     private static final int SIZE = 8;
-    // private static Integer[][] board = new Integer[SIZE][SIZE]; // 盤面
-    // private static Integer[][] validMoves = new Integer[SIZE][SIZE]; // 設置できる場所の盤面
     private static final int EMPTY = 0; // 設置されていない
     private static final int BLACK = 1; // 黒の石が置かれている
     private static final int WHITE = 2; // 白の石が置かれている
     private static final int CANPLACE = 3; // 設置可能
 
     // テスト用
+    private static Integer[][] testBoard = new Integer[SIZE][SIZE]; // 盤面(テスト用)
+    private static Integer[][] testValidMoves = new  Integer[SIZE][SIZE];
+    private static String testTurn;
     static Scanner scanner = new Scanner(System.in);
 
     // コンストラクタ（そもそもインスタンスの生成は必要？？）
@@ -21,7 +22,6 @@ public class Othello {
         initBoard(tempBoard); // 盤面の初期化
     }
 
-    
 
     // 盤面初期化メソッド
     public static void initBoard(Integer[][] tempBoard) {
@@ -41,55 +41,59 @@ public class Othello {
         System.out.println("Board is initialized.");
     }
 
-    // // 相手の手番情報取得メソッド
-    // public static String opponent(String turn) {
-    //     if (turn == "Black") {
-    //         return "White";
-    //     } else if (turn == "White") {
-    //         return "Black";
-    //     }else {
-    //         return "a";
-    //     }
-    // }
+    //テスト用
+    public static void initTurn(String turn){
+        turn = "Black";
+    }
 
-    // // 手番交換メソッド
-    // public static void changeTurn() {
-    //     if (turn == "Black") {
-    //         turn = "White";
-    //     } else if (turn == "White") {
-    //         turn = "Black";
-    //     }
+    // 相手の手番情報取得メソッド（テスト用）
+    public static String opponent(String turn) {
+        if (turn == "Black") {
+            return "White";
+        } else if (turn == "White") {
+            return "Black";
+        }else {
+            return "error";
+        }
+    }
 
-    // }
+    // 手番交換メソッド（テスト用）
+    public static void changeTurn(String turn) {
+        if (turn == "Black") {
+            turn = "White";
+        } else if (turn == "White") {
+            turn = "Black";
+        }
+    }
 
-    // テスト用盤面表示メソッド
-    // public static void printBoard(int validMove[][]) {
-    //     System.out.print("  ");
-    //     for (int i = 0; i < SIZE; i++)
-    //         System.out.print(i + " ");
-    //     System.out.println();
-    //     for (int i = 0; i < SIZE; i++) {
-    //         System.out.print(i + " ");
-    //         for (int j = 0; j < SIZE; j++) {
-    //             if (board[i][j] == EMPTY) {
-    //                 if (validMove[i][j] == CANPLACE) {
-    //                     System.out.print("◎" + " ");
-    //                     continue;
-    //                 }
-    //             }
-
-    //             if (board[i][j] == EMPTY) {
-    //                 System.out.print(" " + " ");
-    //             } else if (board[i][j] == BLACK) {
-    //                 System.out.print("○" + " ");
-    //             } else if (board[i][j] == WHITE) {
-    //                 System.out.print("●" + " ");
-    //             }
-
-    //         }
-    //         System.out.println();
-    //     }
-    // }
+    //テスト用盤面表示メソッド
+    public static void printBoard(Integer[][] tempBoard, Integer[][] validMove) {
+        System.out.print("  ");
+        for (int i = 0; i < SIZE; i++)
+            System.out.print(i + " ");
+        System.out.println();
+        for (int i = 0; i < SIZE; i++) {
+            System.out.print(i + " ");
+            for (int j = 0; j < SIZE; j++) {
+                if (tempBoard[i][j] == EMPTY) {
+                    if (validMove[i][j] == CANPLACE) {
+                        System.out.print("◎" + " ");
+                        continue;
+                    }
+                }
+    
+                if (tempBoard[i][j] == EMPTY) {
+                    System.out.print(" " + " ");
+                } else if (tempBoard[i][j] == BLACK) {
+                    System.out.print("○" + " ");
+                } else if (tempBoard[i][j] == WHITE) {
+                    System.out.print("●" + " ");
+                }
+    
+            }
+            System.out.println();
+        }
+    }
 
     //あるマスが設置可能かどうかを判定するメソッド
     public static boolean isValidMove(Integer[][] tempBoard, int x, int y, String turn){
@@ -125,6 +129,18 @@ public class Othello {
             // その裏返す候補が本当に裏返せるか（自分の石で挟めるのか）を確認
             if (hasOpponentBetween && i >= 0 && i < 8 && j >= 0 && j < 8 && tempBoard[i][j] == player) {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean hasValidMove(Integer[][] tempBoard, String turn){
+        for(int i = 0; i < SIZE; i++){
+            for(int j = 0; j < SIZE; j++){
+                if(isValidMove(tempBoard, i, j, turn)){
+                    return true;
+                }
             }
         }
 
@@ -258,83 +274,83 @@ public class Othello {
 
     }
 
-    // テスト実行用
-    // public static void main(String[] args) {
+    //テスト実行用
+    public static void main(String[] args) {
 
-    //     // ↓2行にするかこっちか
-    //     // Othello othello = new Othello();
+        // ↓2行にするかこっちか
+        // Othello othello = new Othello();
 
-    //     initBoard();
-    //     initTurn();
+        initBoard(testBoard);
+        initTurn(testTurn);
 
-    //     while (true) {
+        while (true) {
 
-    //         validMoves = getValidMoves(turn);
+            testValidMoves = getValidMovesBoard(testBoard,testTurn);
 
-    //         printBoard(validMoves);
-    //         if (hasValidMoves(validMoves, turn)) {
+            printBoard(testBoard, testValidMoves);
+            if (hasValidMove(testBoard, testTurn)) {
 
-    //             int x = -1, y = -1;
+                int x = -1, y = -1;
 
-    //             while (true) {
-    //                 try {
-    //                     System.out.println(turn + "の番です。x y の順に入力してください（0～7）：");
+                while (true) {
+                    try {
+                        System.out.println(testTurn + "の番です。x y の順に入力してください（0～7）：");
 
-    //                     // 入力チェック：整数かどうか
-    //                     if (!scanner.hasNextInt()) {
-    //                         System.out.println("整数を入力してください。");
-    //                         scanner.next(); // 不正なトークンを捨てる
-    //                         continue;
-    //                     }
-    //                     x = scanner.nextInt();
+                        // 入力チェック：整数かどうか
+                        if (!scanner.hasNextInt()) {
+                            System.out.println("整数を入力してください。");
+                            scanner.next(); // 不正なトークンを捨てる
+                            continue;
+                        }
+                        x = scanner.nextInt();
 
-    //                     if (!scanner.hasNextInt()) {
-    //                         System.out.println("整数を入力してください。");
-    //                         scanner.next();
-    //                         continue;
-    //                     }
-    //                     y = scanner.nextInt();
+                        if (!scanner.hasNextInt()) {
+                            System.out.println("整数を入力してください。");
+                            scanner.next();
+                            continue;
+                        }
+                        y = scanner.nextInt();
 
-    //                     // 範囲チェック
-    //                     if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) {
-    //                         System.out.println("座標は0から7の間で入力してください。");
-    //                         continue;
-    //                     }
+                        // 範囲チェック
+                        if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) {
+                            System.out.println("座標は0から7の間で入力してください。");
+                            continue;
+                        }
 
-    //                     // 設置可能かチェック
-    //                     if (validMoves[x][y] != CANPLACE) {
-    //                         System.out.println("その位置には置けません。別の場所を選んでください。");
-    //                         continue;
-    //                     }
+                        // 設置可能かチェック
+                        if (testValidMoves[x][y] != CANPLACE) {
+                            System.out.println("その位置には置けません。別の場所を選んでください。");
+                            continue;
+                        }
 
-    //                     // ここまで来たら有効な入力
-    //                     break;
+                        // ここまで来たら有効な入力
+                        break;
 
-    //                 } catch (Exception e) {
-    //                     System.out.println("入力にエラーが発生しました。もう一度入力してください。");
-    //                     scanner.nextLine(); // 入力バッファをクリア
-    //                 }
-    //             }
+                    } catch (Exception e) {
+                        System.out.println("入力にエラーが発生しました。もう一度入力してください。");
+                        scanner.nextLine(); // 入力バッファをクリア
+                    }
+                }
 
-    //             makeMove(x, y, turn);
+                makeMove(testBoard, x, y, testTurn);
 
-    //         } else {
-    //             System.out.println(turn + "はパスします。");
-    //             validMoves = getValidMoves(opponent(turn));
-    //             if (!(hasValidMoves(validMoves, opponent(turn))))
-    //                 break;
-    //             // if (isFinished(opponentMove[]))
-    //             //     break;
-    //         }
+            } else {
+                System.out.println(testTurn + "はパスします。");
+                testValidMoves = getValidMovesBoard(testBoard, opponent(testTurn));
+                if (!(hasValidMove(testValidMoves, opponent(testTurn))))
+                    break;
+                // if (isFinished(opponentMove[]))
+                //     break;
+            }
 
-    //         changeTurn();
-    //     }
+            changeTurn(testTurn);
+        }
 
         
-    //     //一応ここではvalidMovesはいらない
-    //     printBoard(validMoves);
-    //     judgeWinner();
+        //一応ここではvalidMovesはいらない
+        printBoard(testBoard, testValidMoves);
+        judgeWinner(testBoard);
 
-    // }
+    }
 
 }
