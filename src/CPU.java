@@ -3,11 +3,11 @@ import java.util.ArrayList;
 public class CPU {
     private String turn; // 先手後手
     private String level; // 強さ（3段階）
+    private int depth; // 探索の深さ
 
     // 定数
     private static final int N_LINE = 8; // 行数
     private static final int LINE_PATTERN = 6361; // 各行の可能なパターン数（3^8）
-    private static final int DEPTH = 3; // 探索深さ（3手先読み）
 
     // 各マスの評価値
     private static final int[] CELL_WEIGHT = {
@@ -29,6 +29,7 @@ public class CPU {
     public CPU(String turn, String level) {
         this.turn = turn;
         this.level = level;
+        depthInit();
         evaluateInit();
     }
 
@@ -45,6 +46,24 @@ public class CPU {
             // 置ける場所がない場合
             System.out.println("CPU: 置ける場所がありません。");
             return new int[] { -1, -1 }; // パスの場合
+        }
+    }
+
+    // depthの初期化
+    private void depthInit() {
+        switch (level) {
+            case "easy":
+                this.depth = 1;
+                break;
+            case "normal":
+                this.depth = 3;
+                break;
+            case "hard":
+                this.depth = 5;
+                break;
+            default:
+                this.depth = 3;
+                break;
         }
     }
 
@@ -95,8 +114,8 @@ public class CPU {
         return !opponentHasMove; // 両者とも合法手がない場合に終了
     }
 
-    // negamax法による探索メソッド
-    private int negamax(Integer[][] board, int depth, int color) {
+    // negaalpha法による探索メソッド
+    private int negaalpha(Integer[][] board, int depth, int color, int alpha, int beta) {
         if (depth == 0 || isGameOver(board)) {
             return color * evaluate(board); // 葉ノードでは評価値を返す（符号調整）
         }
@@ -116,10 +135,9 @@ public class CPU {
             for (int i = 0; i < 8; i++) {
                 tempBoard[i] = board[i].clone();
             }
-            return -negamax(tempBoard, depth, -color); // パス後の相手のスコアを反転
+            return -negaalpha(tempBoard, depth, -color, -beta, -alpha); // パス後の相手のスコアを反転
         }
 
-        int bestScore = Integer.MIN_VALUE;
         for (int[] move : possibleMoves) {
             Integer[][] tempBoard = new Integer[8][8];
             for (int i = 0; i < 8; i++) {
@@ -127,14 +145,17 @@ public class CPU {
             }
 
             Othello.makeMove(tempBoard,move[0], move[1], turn);
-            int score = -negamax(tempBoard, depth - 1, -color);
-            bestScore = Math.max(bestScore, score);
+            int score = -negaalpha(tempBoard, depth - 1, -color, -beta, -alpha);
+            alpha = Math.max(alpha, score);
+            if(alpha >= beta) {
+                break; // 枝狩り
+            }
         }
 
-        return bestScore;
+        return alpha;
     }
 
-    // 操作を決定するアルゴリズム(現在：negamax法DEPTH手読み)
+    // 操作を決定するメソッド
     private int[] decideMove(Integer[][] board) {
         // 置ける場所をリストアップ
         ArrayList<int[]> possibleMoves = new ArrayList<>();
@@ -165,7 +186,7 @@ public class CPU {
             // 仮に石を置く
             Othello.makeMove(tempBoard,move[0], move[1], turn);
             // 評価値を計算
-            int score = -negamax(tempBoard, DEPTH - 1, -color);
+            int score = -negaalpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE, Integer.MAX_VALUE);
             // 最善手更新
             if (score > bestScore) {
                 bestScore = score;
