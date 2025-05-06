@@ -18,7 +18,7 @@ public class Client {
     // private static final int CANPLACE = 3; // Othelloクラスで定義済み
 
     private ScreenUpdater screenUpdater; // UIへの参照
-    private CPU cpuPlayer; // CPUプレイヤー
+    private CPUStub cpuPlayer; // CPUプレイヤー
     private String cpuColor; // CPUの色 ("黒" または "白")
 
     // --- Othelloロジック連携 ---
@@ -84,8 +84,8 @@ public class Client {
             gameActive = true;
 
             // CPUプレイヤーを初期化 (色を "Black"/"White" で渡す)
-            // cpuPlayer = new CPU(cpuColor, cpuStrength); // 修正前
-            cpuPlayer = new CPU(toOthelloColor(cpuColor), cpuStrength); // ★修正: 色を変換して渡す
+            // cpuPlayer = new CPU(toOthelloColor(cpuColor), cpuStrength); // ★修正: 色を変換して渡す
+            cpuPlayer = new CPUStub(toOthelloColor(cpuColor), cpuStrength);
             System.out.println("CPU player initialized with color: " + toOthelloColor(cpuColor));
 
             // 初期盤面とステータスをUIに反映 (EDTで実行されることを保証)
