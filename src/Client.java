@@ -129,7 +129,7 @@ public class Client {
             // 最初のターンがCPUの場合、CPUの思考を開始
             if (currentTurn.equals(cpuColor)) {
                 isPlayerTurn = false;
-                startCpuTurn(); // 遅延なしで開始
+                startCpuTurn();
             } else {
                 isPlayerTurn = true;
                 // プレイヤーのターンであること、置ける場所があるか確認
