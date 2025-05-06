@@ -108,13 +108,13 @@ public void actionPerformed(ActionEvent e) {
             cardLayout.show(panel,"gamescreen");
             break;
         case "loginscreen_choseok":
-            if(client.connectToServer(loginscreen_textarea_name.getText())){
-                isVsCpu=false;
-                gamescreen_button_surrender.setEnabled(false);
-                cardLayout.show(panel,"gamescreen");   
-            }else{
-                cardLayout.show(panel,"playerchoicescreen");
-            }
+            // if(client.connectToServer(loginscreen_textarea_name.getText())){
+            //     isVsCpu=false;
+            //     gamescreen_button_surrender.setEnabled(false);
+            //     cardLayout.show(panel,"gamescreen");   
+            // }else{
+            //     cardLayout.show(panel,"playerchoicescreen");
+            // }
             break;   
         case "gamescreen_chosesurrender":
             cardLayout.show(panel,"mainscreen");
@@ -130,14 +130,31 @@ public void actionPerformed(ActionEvent e) {
             
     }
 
-    try {
-        int pre_move = Integer.parseInt(action);
-        int move[] = {0, 0};
-        move[0] = pre_move / 8;
-        move[1] = pre_move % 8;
-        client.sendMoveToServer(move); // ←nullではなくmoveにすべきと思われます
-    } catch (NumberFormatException ex) {
-        // 数字でない場合は無視
+    // try {
+    //     int pre_move = Integer.parseInt(action);
+    //     int move[] = {0, 0};
+    //     move[0] = pre_move / 8;
+    //     move[1] = pre_move % 8;
+    //     client.sendMoveToServer(move); // ←nullではなくmoveにすべきと思われます
+    // } catch (NumberFormatException ex) {
+    //     // 数字でない場合は無視
+    // }
+}
+
+public void show(String state){
+    switch(state){
+        case "playerchoicescreen":
+            cardLayout.show(panel,"playerchoicescreen");
+            break;
+        case "cpuchoicescreen":
+            cardLayout.show(panel,"cpuchoicescreen");
+            break;
+        case "gamescreen":
+            cardLayout.show(panel,"gamescreen");
+            break;
+        case "mainscreen":
+            cardLayout.show(panel,"mainscreen");
+            break;
     }
 }
 
