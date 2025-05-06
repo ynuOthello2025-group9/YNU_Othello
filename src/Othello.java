@@ -18,8 +18,9 @@ public class Othello {
     static Scanner scanner = new Scanner(System.in);
 
     // コンストラクタ（そもそもインスタンスの生成は必要？？）
-    public Othello(Integer[][] tempBoard) {
+    public Othello(Integer[][] tempBoard, String turn) {
         initBoard(tempBoard); // 盤面の初期化
+        initTurn(turn);
     }
 
 
@@ -42,8 +43,10 @@ public class Othello {
     }
 
     //テスト用
-    public static void initTurn(String turn){
+    public static String initTurn(String turn){
         turn = "Black";
+
+        return turn;
     }
 
     // 相手の手番情報取得メソッド（テスト用）
@@ -58,12 +61,14 @@ public class Othello {
     }
 
     // 手番交換メソッド（テスト用）
-    public static void changeTurn(String turn) {
+    public static String changeTurn(String turn) {
         if (turn == "Black") {
             turn = "White";
         } else if (turn == "White") {
             turn = "Black";
         }
+
+        return turn;
     }
 
     //テスト用盤面表示メソッド
@@ -281,13 +286,14 @@ public class Othello {
         // Othello othello = new Othello();
 
         initBoard(testBoard);
-        initTurn(testTurn);
+        testTurn = initTurn(testTurn);
 
         while (true) {
 
-            testValidMoves = getValidMovesBoard(testBoard,testTurn);
+            testValidMoves = getValidMovesBoard(testBoard, testTurn);
 
             printBoard(testBoard, testValidMoves);
+
             if (hasValidMove(testBoard, testTurn)) {
 
                 int x = -1, y = -1;
@@ -343,7 +349,7 @@ public class Othello {
                 //     break;
             }
 
-            changeTurn(testTurn);
+            testTurn = changeTurn(testTurn);
         }
 
         
