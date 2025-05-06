@@ -32,29 +32,20 @@ public class CPU {
         evaluateInit();
     }
 
-    /*
-     * // 操作情報をクライアントに送信
-     * // clientはこれを呼び出し続ければいい
-     * public Integer[] getCPUOperation(Othello othello) {
-     * 
-     * // 盤面情報を取得
-     * Integer[][] board = getBoard(othello); // Othelloクラスのメソッド?
-     * 
-     * // 次の手を決定
-     * int[] operationInfo = decideMove(board);
-     * 
-     * if (operationInfo != null) {
-     * // 決定した手を返す（Client内で処理）
-     * return operationInfo;
-     * } else {
-     * // 置ける場所がない場合
-     * System.out.println("CPU: 置ける場所がありません。");
-     * return new Integer[] { -1, -1 }; // パスの場合
-     * }
-     * }
-     */
+    // 操作情報をクライアントに送信
+    // clientはこれを呼び出し続ければいい
     public int[] getCPUOperation(Integer[][] board) {
-        return this.decideMove(board);
+        // 次の手を決定
+        int[] operationInfo = decideMove(board);
+
+        if (operationInfo != null) {
+            // 決定した手を返す（Client内で処理）
+            return operationInfo;
+        } else {
+            // 置ける場所がない場合
+            System.out.println("CPU: 置ける場所がありません。");
+            return new int[] { -1, -1 }; // パスの場合
+        }
     }
 
     // 事前計算
@@ -89,7 +80,7 @@ public class CPU {
             }
             res += CELL_SCORE[line][pattern];
         }
-        return "先手".equals(turn) ? res : -res;
+        return "black".equals(turn) ? res : -res;
     }
 
     // negamax法による探索メソッド
@@ -101,7 +92,7 @@ public class CPU {
         ArrayList<int[]> possibleMoves = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (canPlace(i, j, board)) {
+                if (Othello.isValidMove(board, i, j, turn)) {
                     possibleMoves.add(new int[] { i, j });
                 }
             }
@@ -123,7 +114,7 @@ public class CPU {
                 tempBoard[i] = board[i].clone();
             }
 
-            placeStone(move[0], move[1], tempBoard);
+            Othello.makeMove(tempBoard,move[0], move[1], turn);
             // othello.placeStone(move[0], move[1], turn.equals("先手") ? 1 : 2, tempBoard);
             int score = -negamax(tempBoard, depth - 1, -color);
             bestScore = Math.max(bestScore, score);
@@ -138,7 +129,7 @@ public class CPU {
         ArrayList<int[]> possibleMoves = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (canPlace(i, j, board)) {
+                if (Othello.isValidMove(board, i, j, turn)) {
                     possibleMoves.add(new int[] { i, j });
                 }
             }
@@ -152,7 +143,7 @@ public class CPU {
         // 最善手の選択
         int bestScore = Integer.MIN_VALUE;
         int[] bestMove = possibleMoves.get(0); // デフォルトで最初の合法手
-        int color = "先手".equals(turn) ? 1 : -1; // 先手:+1, 後手:-1
+        int color = "black".equals(turn) ? 1 : -1; // 先手:+1, 後手:-1
 
         for (int[] move : possibleMoves) {
             // 盤面をコピー
@@ -161,7 +152,7 @@ public class CPU {
                 tempBoard[i] = board[i].clone();
             }
             // 仮に石を置く
-            placeStone(move[0], move[1], tempBoard);
+            Othello.makeMove(tempBoard,move[0], move[1], turn);
             // 評価値を計算
             int score = -negamax(tempBoard, DEPTH - 1, -color);
             // 最善手更新
@@ -173,53 +164,5 @@ public class CPU {
 
         return bestMove;
     }
-
-    // 石を置くメソッド（実際はOthelloクラスに実装）
-    private void placeStone(int row, int col, Integer[][] board) {
-        
-    }
-
-    // 特定の位置に石を置けるか判定するメソッド (実際はOthelloクラスに実装するはず。適当です。)
-    private boolean canPlace(int row, int col, Integer[][] board) {
-        // すでに石がある場合は置けない
-        if (board[row][col] != 0) {
-            return false;
-        }
-        // 自分の石（先手なら1、後手なら2）
-        int myStone;
-        if ("先手".equals(turn)) {
-            myStone = 1; // 先手なら黒（1）
-        } else {
-            myStone = 2; // 後手なら白（2）
-        }
-        int opponentStone;
-        if (myStone == 1) {
-            opponentStone = 2; // 自分が黒（1）なら相手は白（2）
-        } else {
-            opponentStone = 1; // 自分が白（2）なら相手は黒（1）
-        }
-        // 8方向（上下左右、斜め）をチェック
-        int[][] directions = {
-                { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }, // 上下左右
-                { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } // 斜め
-        };
-        for (int[] dir : directions) {
-            int dr = dir[0];
-            int dc = dir[1];
-            int r = row + dr;
-            int c = col + dc;
-            boolean foundOpponent = false;
-            // 相手の石を挟めるかチェック
-            while (r >= 0 && r < 8 && c >= 0 && c < 8 && board[r][c] == opponentStone) {
-                foundOpponent = true;
-                r += dr;
-                c += dc;
-            }
-            // 相手の石があって、その先に自分の石があれば置ける
-            if (foundOpponent && r >= 0 && r < 8 && c >= 0 && c < 8 && board[r][c] == myStone) {
-                return true;
-            }
-        }
-        return false; // どの方向でも挟めない場合
-    }
 }
+    
