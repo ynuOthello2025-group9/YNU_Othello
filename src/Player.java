@@ -22,4 +22,16 @@ public class Player {
     public String getStoneColor() {
         return stoneColor;
     }
+    /**
+     * Playerクラス (提供されたものをベースに、相手の色取得メソッドを追加)
+     */
+    public String getOpponentColor() {
+        if ("黒".equals(stoneColor)) {
+            return "白";
+        } else if ("白".equals(stoneColor)) {
+            return "黒";
+        } else {
+            return "?"; // 不明な場合
+        }
+    }
 }
