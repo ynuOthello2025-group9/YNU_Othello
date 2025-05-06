@@ -38,7 +38,7 @@ public class Othello {
         board[4][3] = BLACK;
         board[4][4] = WHITE;
 
-        System.out.println("Board is initialised.");
+        System.out.println("Board is initialized.");
     }
 
     // 盤面取得メソッド（表示させるわけではない）
@@ -53,7 +53,13 @@ public class Othello {
 
     // 相手の手番情報取得メソッド
     public static String opponent(String turn) {
-        return (turn == "Black") ? "White" : "Black";
+        if (turn == "Black") {
+            return "White";
+        } else if (turn == "White") {
+            return "Black";
+        } else {
+            return "??";// エラー処理したい
+        }
     }
 
     // 手番交換メソッド
@@ -96,7 +102,7 @@ public class Othello {
     }
 
     // 色に応じて石の設置可能場所をboard形式で返すメソッド
-    public int[][] getValidMoves(int[][] board, String turn) {
+    public static int[][] getValidMoves(int[][] board, String turn) {
         int[][] validMoves = new int[SIZE][SIZE]; // returnする配列
 
         // 置けない場所は-1とする
@@ -152,7 +158,7 @@ public class Othello {
     }
 
     // 操作を反映し、石を裏返すメソッド
-    public void makeMove(int x, int y, String turn) {
+    public static void makeMove(int x, int y, String turn) {
 
         // まず置く場所に石を置く
         if (turn == "Black") {
@@ -198,13 +204,17 @@ public class Othello {
     }
 
     // ある色が自分の番において設置可能場所があるかどうかを返すメソッド
-    public boolean hasValidMoves(String turn) {
+    public static boolean hasValidMoves(String turn) {
+
+        int[][] validMoves = new int[SIZE][SIZE];
+
+        validMoves = getValidMoves(board, turn);
 
         // 全てのマスを走査し
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
                 // ある場所が設置可能であれば
-                if (getValidMoves(board, turn)[x][y] == CANPLACE) {
+                if (validMoves[x][y] == CANPLACE) {
                     return true;
                 }
             }
@@ -216,7 +226,7 @@ public class Othello {
 
     // こっちで設置可能場所を取得できるから相手の入力関係なく判断しても良いっちゃいい
     // 自分がパスになったときに作用する、終了判定メソッド（置けないときはint[2] = {-1, -1}でいいんだっけ）
-    public boolean isFinished(int[] opponentMove) {
+    public static boolean isFinished(int[] opponentMove) {
         // 相手もパスだった時に終了するという考え
         if (opponentMove[0] == -1 && opponentMove[1] == -1) {
             return true;
@@ -256,7 +266,7 @@ public class Othello {
 
     // テスト実行用
     public static void main(String[] args) {
-        Othello othello = new Othello();
+        // Othello othello = new Othello();
 
         initBoard();
 
@@ -264,10 +274,10 @@ public class Othello {
 
         while (true) {
 
-            validMoves = othello.getValidMoves(board, turn);
+            validMoves = getValidMoves(board, turn);
 
             printBoard(validMoves);
-            if (othello.hasValidMoves(turn)) {
+            if (hasValidMoves(turn)) {
 
                 int x = -1, y = -1;
 
@@ -311,11 +321,11 @@ public class Othello {
                     }
                 }
 
-                othello.makeMove(x, y, turn);
+                makeMove(x, y, turn);
 
             } else {
                 System.out.println(turn + "はパスします。");
-                if (!(othello.hasValidMoves(opponent(turn))))
+                if (!(hasValidMoves(opponent(turn))))
                     break;
             }
 
