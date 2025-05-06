@@ -283,7 +283,7 @@ public class ScreenUpdater extends JFrame implements ActionListener {
 
             // パスボタンの有効/無効制御
             if(client != null && client.isNetworkMatch()){
-                boolean myTurn = playerTurn != null && playerTurn.equals(client.getPlayerColor());
+                boolean myTurn = playerTurn != null && playerTurn.equals(client.getHumanPlayer().getStoneColor());
                 // 厳密なパス可能判定は難しいので、自分のターンなら有効にする
                 // (サーバー側でパスできない場合はエラーが返る想定)
                 passButton.setEnabled(myTurn);
