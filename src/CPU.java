@@ -83,9 +83,21 @@ public class CPU {
         return "black".equals(turn) ? res : -res;
     }
 
+    // CPU用終了判定メソッド
+    private boolean isGameOver(Integer[][] board) {
+        // 自分の合法手をチェック
+        if (Othello.hasValidMove(board, turn)) {
+            return false;
+        }
+        // 相手の合法手をチェック
+        String opponentturn = "black".equals(turn) ? "white" : "black";
+        boolean opponentHasMove = Othello.hasValidMove(board, opponentturn);
+        return !opponentHasMove; // 両者とも合法手がない場合に終了
+    }
+
     // negamax法による探索メソッド
     private int negamax(Integer[][] board, int depth, int color) {
-        if (depth == 0) {
+        if (depth == 0 || isGameOver(board)) {
             return color * evaluate(board); // 葉ノードでは評価値を返す（符号調整）
         }
 
@@ -115,7 +127,6 @@ public class CPU {
             }
 
             Othello.makeMove(tempBoard,move[0], move[1], turn);
-            // othello.placeStone(move[0], move[1], turn.equals("先手") ? 1 : 2, tempBoard);
             int score = -negamax(tempBoard, depth - 1, -color);
             bestScore = Math.max(bestScore, score);
         }
