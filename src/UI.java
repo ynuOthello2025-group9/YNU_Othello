@@ -102,7 +102,7 @@ public void actionPerformed(ActionEvent e) {
     String action=e.getActionCommand();
     switch(action){
         case "mainscreen_choseplayer":
-        gamescreen_button_surrender.setEnabled(false);
+            gamescreen_button_surrender.setEnabled(false);
             cardLayout.show(panel,"playerchoicescreen");
             break;
         case "mainscreen_chosecpu":
@@ -135,8 +135,17 @@ public void actionPerformed(ActionEvent e) {
             cpuchoicescreen_button_gosecond.setBackground(Color.YELLOW);
             cpuchoicescreen_button_confirm.setEnabled(true);
             break;
-            
+        default:
+            if (action.matches("\\d+,\\d+")){
+                String[] parts = action.split(",");
+                int j = Integer.parseInt(parts[0]);
+                int i = Integer.parseInt(parts[1]);
+                int[] move={j,i};
+                client.sendMoveToServer(move);
+                updateBoard(move);
+            }   
     }
+
     
 }
 
@@ -145,7 +154,7 @@ public void actionPerformed(ActionEvent e) {
     }
 
 // creating main screen
-public void mainScreen(){
+public void mainScreen(){//TODO: tidy up
 
     // layout and stuffs
 
@@ -194,7 +203,7 @@ public void mainScreen(){
 }
 
 // creating cpu choose screen
-public void cpuChoiceScreen(){
+public void cpuChoiceScreen(){//TODO: tidy up
 
     // layouts and stuffs
 
@@ -271,7 +280,7 @@ public void cpuChoiceScreen(){
 
 
   // creating login screen
-public void loginScreen(){
+public void loginScreen(){//TODO: tidy up
 
     // layouts and stuffs
 
@@ -319,7 +328,7 @@ public void loginScreen(){
     loginscreen_button_ok.setActionCommand("loginscreen_choseok");
 }
   // game screen
-  public void gameScreen(){
+  public void gameScreen(){//TODO: tidy up
 
     // layouts and stuffs
     panel4=new JPanel();
@@ -415,7 +424,7 @@ public void loginScreen(){
 
   }
 
-  // dialogue pop up 
+  // TODO: dialogue pop up 
 
   // to update player info
   public void updatePlayerInfo(String playerName,String playerColor){
@@ -468,12 +477,14 @@ public void loginScreen(){
   public void updateBoard(int board[][]){
     for(int i=0;i<8;i++){
         for(int j=0;j<8;j++){
-            if(board[j][i]==1){
-                gamescreen_button_buttonarray[i][j].setIcon(blackIcon); // change to image later
-            }else if(board[i][j]==2){
-                gamescreen_button_buttonarray[i][j].setIcon(whiteIcon); // change to image later
-            }else if(board[j][i]==0){
-                gamescreen_button_buttonarray[i][j].setIcon(boardIcon);
+            if(board[j][i]==1){//black
+                gamescreen_button_buttonarray[j][i].setIcon(blackIcon);
+            }else if(board[i][j]==2){//white
+                gamescreen_button_buttonarray[j][i].setIcon(whiteIcon);
+            }else if(board[j][i]==0){//empty
+                gamescreen_button_buttonarray[j][i].setIcon(boardIcon);
+            }else if(board[j][i]==3){//置き可能
+                gamescreen_button_buttonarray[j][i].setText("可");
             }
         }
     }
