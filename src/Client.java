@@ -28,14 +28,15 @@ public class Client {
      * コンストラクタ
      * @param serverAddress 接続先サーバーのアドレス
      * @param serverPort 接続先サーバーのポート番号
-     * @param ui UIクラスのインスタンス
      */
-    public Client(String serverAddress, int serverPort, UI ui) {
+    public Client(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.player = new Player(); // Playerインスタンスを生成
-        this.ui = ui;
         System.out.println("Client instance created."); // デバッグ用
+    }
+    public void setUI(UI ui){
+        this.ui = ui;
     }
 
     /**
@@ -210,6 +211,7 @@ public class Client {
                  gameStarted = true; // 自分のターン通知が来たらゲーム開始とみなす
                  // UI更新 (自分のターン表示、操作可能にするなど)
                  SwingUtilities.invokeLater(() -> {
+                    if(ui == null) return;
                     // TODO: ui.updateTurnLabel(player.getPlayerName()); // 自分の名前でターン表示更新
                     // TODO: ui.enableBoardInput(true); // ボード操作を有効化
                  });
@@ -224,8 +226,10 @@ public class Client {
                  gameStarted = true; // 相手のターン通知でもゲーム開始とみなす
                  // UI更新 (相手のターン表示、操作不能にするなど)
                  SwingUtilities.invokeLater(() -> {
-                     // TODO: ui.updateTurnLabel(opponentName); // 相手の名前でターン表示更新
-                     // TODO: ui.enableBoardInput(false); // ボード操作を無効化
+                    if(ui != null){
+                        // TODO: ui.updateTurnLabel(opponentName); // 相手の名前でターン表示更新
+                        // TODO: ui.enableBoardInput(false); // ボード操作を無効化
+                    }
                  });
 
             } else if (message.startsWith("RESULT:")) {
@@ -241,12 +245,13 @@ public class Client {
                 handlePassInfo(passedPlayerColor);
 
              } else if (message.startsWith("ERROR:")) {
-                 String errorMessage = message.substring("ERROR:".length());
-                 System.err.println("Server Error: " + errorMessage);
-                 SwingUtilities.invokeLater(() ->
-                     JOptionPane.showMessageDialog(ui, "サーバーエラー: " + errorMessage, "エラー", JOptionPane.ERROR_MESSAGE)
-                 );
-
+                String errorMessage = message.substring("ERROR:".length());
+                System.err.println("Server Error: " + errorMessage);
+                SwingUtilities.invokeLater(() -> {
+                    if(ui != null){
+                        JOptionPane.showMessageDialog(ui, "サーバーエラー: " + errorMessage, "エラー", JOptionPane.ERROR_MESSAGE);
+                    }
+                 });
             } else {
                 System.out.println("Unknown message from server: " + message);
             }
@@ -534,44 +539,24 @@ public class Client {
 
       // --- mainメソッド (テスト用) ---
       public static void main(String[] args) {
-         // Clientクラス単体でテストする場合の例
-         // 実際にはUIクラスからClientを生成・利用する
+        // サーバー接続情報
+        String address = "localhost";
+        int port = 10000;
 
-         // ダミーのUIを作成 (実際のUIがない場合)
-         JFrame frame = new JFrame("Test Client");
-         frame.setSize(300, 200);
-         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-         UI dummyUI = new UI("Dummy Othello"); // UIクラスのコンストラクタに合わせる
+        // 1. Client インスタンスを生成
+        Client client = new Client(address, port);
 
-         Client client = new Client("localhost", 10000, dummyUI); // サーバーのアドレスとポートを指定
+        // 2. UI インスタンスを生成し、Client インスタンスを渡す
+        //    UI スレッドで生成・表示する
+        SwingUtilities.invokeLater(() -> {
+            UI ui = new UI("Othello", client); // ★ UIのコンストラクタでClientを受け取る
+            // 3. Client に UI の参照を設定する
+            client.setUI(ui);
+            System.out.println("UI started and linked with Client.");
+        });
 
-         // プレイヤー名を入力して接続開始 (実際にはUIの入力フィールドから取得)
-         String testPlayerName = JOptionPane.showInputDialog(frame, "プレイヤー名を入力してください:");
-         if (testPlayerName != null && !testPlayerName.trim().isEmpty()) {
-             boolean connected = client.connectToServer(testPlayerName);
-             if (connected) {
-                 System.out.println(testPlayerName + " としてサーバーに接続しました。");
-                 // 接続後の処理 (例: ゲーム画面表示など)
-                 // dummyUI.showGameScreen(); // UIにゲーム画面表示メソッドがあると仮定
-             } else {
-                 System.err.println("サーバーへの接続に失敗しました。");
-                 frame.dispose(); // 接続失敗したらフレームを閉じる
-             }
-         } else {
-            System.out.println("プレイヤー名が入力されませんでした。");
-            frame.dispose(); // フレームを閉じる
-         }
-
-         // プログラムが終了しないように待機（テスト用）
-         // 本来はUIイベントループが回り続ける
-         // while(client.socket != null && !client.socket.isClosed()) {
-         //     try {
-         //         Thread.sleep(1000);
-         //     } catch (InterruptedException e) {
-         //         Thread.currentThread().interrupt();
-         //         break;
-         //     }
-         // }
-         // System.out.println("Client main thread finished.");
-     }
+        // 注意：この後、connectToServer は UI上の操作 (ログインOKボタン) を
+        // きっかけに呼び出す必要がある。main から直接呼ぶのは難しい。
+        System.out.println("Client main finished. Waiting for UI actions.");
+    }
 }
