@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 //オセロゲームの主に盤面管理やゲームを進めるクラス
 public class Othello {
@@ -11,11 +10,11 @@ public class Othello {
     private static final int WHITE = 2; // 白の石が置かれている
     private static final int CANPLACE = 3; // 設置可能
 
-    // テスト用
-    private static Integer[][] testBoard = new Integer[SIZE][SIZE]; // 盤面(テスト用)
-    private static Integer[][] testValidMoves = new Integer[SIZE][SIZE];
-    private static String testTurn;
-    static Scanner scanner = new Scanner(System.in);
+    // // テスト用
+    // private static Integer[][] testBoard = new Integer[SIZE][SIZE]; // 盤面(テスト用)
+    // private static Integer[][] testValidMoves = new Integer[SIZE][SIZE];
+    // private static String testTurn;
+    // static Scanner scanner = new Scanner(System.in);
 
     // コンストラクタ（そもそもインスタンスの生成は必要？？）
     public Othello(Integer[][] tempBoard, String turn) {
@@ -44,12 +43,11 @@ public class Othello {
     // テスト用
     public static String initTurn(String turn) {
         turn = "Black";
-
         return turn;
     }
 
     // 相手の手番情報取得メソッド（テスト用）
-    public static String opponent(String turn) {
+    public static String opponentTurn(String turn) {
         if (turn == "Black") {
             return "White";
         } else if (turn == "White") {
@@ -87,33 +85,33 @@ public class Othello {
     }
 
     // テスト用盤面表示メソッド
-    public static void printBoard(Integer[][] tempBoard, Integer[][] validMoves) {
-        System.out.print("  ");
-        for (int i = 0; i < SIZE; i++)
-            System.out.print(i + " ");
-        System.out.println();
-        for (int i = 0; i < SIZE; i++) {
-            System.out.print(i + " ");
-            for (int j = 0; j < SIZE; j++) {
-                if (tempBoard[i][j] == EMPTY) {
-                    if (validMoves[i][j] == CANPLACE) {
-                        System.out.print("◎" + " ");
-                        continue;
-                    }
-                }
+    // public static void printBoard(Integer[][] tempBoard, Integer[][] validMoves) {
+    //     System.out.print("  ");
+    //     for (int i = 0; i < SIZE; i++)
+    //         System.out.print(i + " ");
+    //     System.out.println();
+    //     for (int i = 0; i < SIZE; i++) {
+    //         System.out.print(i + " ");
+    //         for (int j = 0; j < SIZE; j++) {
+    //             if (tempBoard[i][j] == EMPTY) {
+    //                 if (validMoves[i][j] == CANPLACE) {
+    //                     System.out.print("◎" + " ");
+    //                     continue;
+    //                 }
+    //             }
 
-                if (tempBoard[i][j] == EMPTY) {
-                    System.out.print(" " + " ");
-                } else if (tempBoard[i][j] == BLACK) {
-                    System.out.print("○" + " ");
-                } else if (tempBoard[i][j] == WHITE) {
-                    System.out.print("●" + " ");
-                }
+    //             if (tempBoard[i][j] == EMPTY) {
+    //                 System.out.print(" " + " ");
+    //             } else if (tempBoard[i][j] == BLACK) {
+    //                 System.out.print("○" + " ");
+    //             } else if (tempBoard[i][j] == WHITE) {
+    //                 System.out.print("●" + " ");
+    //             }
 
-            }
-            System.out.println();
-        }
-    }
+    //         }
+    //         System.out.println();
+    //     }
+    // }
 
     // あるマスが設置可能かどうかを判定するメソッド
     public static boolean isValidMove(Integer[][] tempBoard, int x, int y, String turn) {
@@ -155,6 +153,7 @@ public class Othello {
         return false;
     }
 
+    //石の数を取得するメソッド
     public static int numberOfStone(Integer[][] tempBoard, int color) {
 
         int num = 0;
@@ -170,6 +169,7 @@ public class Othello {
         return num;
     }
 
+    //設置可能場所があるか否か
     public static boolean hasValidMove(Integer[][] tempBoard, String turn) {
 
         int color = (turn == "Black") ? BLACK : WHITE;
@@ -313,87 +313,86 @@ public class Othello {
         } else {
             return "Draw";
         }
-
     }
 
     // テスト実行用
-    public static void main(String[] args) {
+    // public static void main(String[] args) {
 
-        // ↓2行にするかこっちか
-        // Othello othello = new Othello();
+    //     // ↓2行にするかこっちか
+    //     // Othello othello = new Othello();
 
-        initBoard(testBoard);
-        testTurn = initTurn(testTurn);
+    //     initBoard(testBoard);
+    //     testTurn = initTurn(testTurn);
 
-        while (true) {
+    //     while (true) {
 
-            testValidMoves = getValidMovesBoard(testBoard, testTurn);
+    //         testValidMoves = getValidMovesBoard(testBoard, testTurn);
 
-            printBoard(testBoard, testValidMoves);
+    //         printBoard(testBoard, testValidMoves);
 
-            if (hasValidMove(testBoard, testTurn)) {
+    //         if (hasValidMove(testBoard, testTurn)) {
 
-                int x = -1, y = -1;
+    //             int x = -1, y = -1;
 
-                while (true) {
-                    try {
-                        System.out.println(testTurn + "の番です。x y の順に入力してください（0～7）：");
+    //             while (true) {
+    //                 try {
+    //                     System.out.println(testTurn + "の番です。x y の順に入力してください（0～7）：");
 
-                        // 入力チェック：整数かどうか
-                        if (!scanner.hasNextInt()) {
-                            System.out.println("整数を入力してください。");
-                            scanner.next(); // 不正なトークンを捨てる
-                            continue;
-                        }
-                        x = scanner.nextInt();
+    //                     // 入力チェック：整数かどうか
+    //                     if (!scanner.hasNextInt()) {
+    //                         System.out.println("整数を入力してください。");
+    //                         scanner.next(); // 不正なトークンを捨てる
+    //                         continue;
+    //                     }
+    //                     x = scanner.nextInt();
 
-                        if (!scanner.hasNextInt()) {
-                            System.out.println("整数を入力してください。");
-                            scanner.next();
-                            continue;
-                        }
-                        y = scanner.nextInt();
+    //                     if (!scanner.hasNextInt()) {
+    //                         System.out.println("整数を入力してください。");
+    //                         scanner.next();
+    //                         continue;
+    //                     }
+    //                     y = scanner.nextInt();
 
-                        // 範囲チェック
-                        if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) {
-                            System.out.println("座標は0から7の間で入力してください。");
-                            continue;
-                        }
+    //                     // 範囲チェック
+    //                     if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) {
+    //                         System.out.println("座標は0から7の間で入力してください。");
+    //                         continue;
+    //                     }
 
-                        // 設置可能かチェック
-                        if (!(isValidMove(testBoard, x, y, testTurn))) {
-                            System.out.println("その位置には置けません。別の場所を選んでください。");
-                            continue;
-                        }
+    //                     // 設置可能かチェック
+    //                     if (!(isValidMove(testBoard, x, y, testTurn))) {
+    //                         System.out.println("その位置には置けません。別の場所を選んでください。");
+    //                         continue;
+    //                     }
 
-                        // ここまで来たら有効な入力
-                        break;
+    //                     // ここまで来たら有効な入力
+    //                     break;
 
-                    } catch (Exception e) {
-                        System.out.println("入力にエラーが発生しました。もう一度入力してください。");
-                        scanner.nextLine(); // 入力バッファをクリア
-                    }
-                }
+    //                 } catch (Exception e) {
+    //                     System.out.println("入力にエラーが発生しました。もう一度入力してください。");
+    //                     scanner.nextLine(); // 入力バッファをクリア
+    //                 }
+    //             }
 
-                makeMove(testBoard, x, y, testTurn);
+    //             makeMove(testBoard, x, y, testTurn);
 
-            } else {
-                System.out.println(testTurn + "はパスします。");
+    //         } else {
+    //             System.out.println(testTurn + "はパスします。");
 
-                if (!(hasValidMove(testBoard, opponent(testTurn)))) {
-                    break;
-                }
+    //             if (!(hasValidMove(testBoard, opponentTurn(testTurn)))) {
+    //                 break;
+    //             }
 
-                // if (isFinished(opponentMove[]))
-                // break;
-            }
+    //             // if (isFinished(opponentMove[]))
+    //             // break;
+    //         }
 
-            testTurn = changeTurn(testTurn);
-        }
+    //         testTurn = changeTurn(testTurn);
+    //     }
 
-        // 一応ここではvalidMovesはいらない
-        printBoard(testBoard, testValidMoves);
-        System.out.println(judgeWinner(testBoard));
+    //     // 一応ここではvalidMovesはいらない
+    //     printBoard(testBoard, testValidMoves);
+    //     System.out.println(judgeWinner(testBoard));
 
-    }
+    // }
 }
