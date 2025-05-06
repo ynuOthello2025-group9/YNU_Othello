@@ -52,13 +52,13 @@ public class CPU {
     // depthの初期化
     private void depthInit() {
         switch (level) {
-            case "easy":
+            case "弱い":
                 this.depth = 1;
                 break;
-            case "normal":
+            case "普通":
                 this.depth = 3;
                 break;
-            case "hard":
+            case "強い":
                 this.depth = 5;
                 break;
             default:
@@ -100,7 +100,7 @@ public class CPU {
                 }
                 res += CELL_SCORE[line][pattern];
             }
-            return "black".equals(turn) ? res / 256 : -res / 256;
+            return "Black".equals(turn) ? res / 256 : -res / 256;
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Error in evaluate: Array index out of bounds. " + e.getMessage());
             e.printStackTrace();
@@ -119,7 +119,7 @@ public class CPU {
             return false;
         }
         // 相手の合法手をチェック
-        String opponentturn = "black".equals(turn) ? "white" : "black";
+        String opponentturn = "Black".equals(turn) ? "White" : "Black";
         boolean opponentHasMove = Othello.hasValidMove(board, opponentturn);
         return !opponentHasMove; // 両者とも合法手がない場合に終了
     }
@@ -183,6 +183,7 @@ public class CPU {
                 }
             }
 
+            // 置ける場所がない場合
             if (possibleMoves.isEmpty()) {
                 System.out.println("CPU: No valid moves available, passing.");
                 return null; // パス
@@ -190,7 +191,7 @@ public class CPU {
 
             int bestScore = Integer.MIN_VALUE;
             int[] bestMove = possibleMoves.get(0);
-            int color = "black".equals(turn) ? 1 : -1;
+            int color = "Black".equals(turn) ? 1 : -1;
 
             for (int[] move : possibleMoves) {
                 Integer[][] tempBoard = new Integer[8][8];
