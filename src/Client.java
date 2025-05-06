@@ -5,8 +5,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Client {
 
+public class Client {
+    // ＋コンストラクタ(): Void​
+    // ＋サーバに接続(プレイヤ名：String): Void​
+    // ＋サーバに操作情報を送信(操作情報：Integer[2])：Void​
+    // ＋サーバから操作情報などを受信(): Integer[2]​
+    // ＋サーバに接続(プレイヤ名：String): Void​
+    // ＋画面の更新(ゲームの状態: String, 局面:Integer[8][8]) : Void​
+    // ＋プレイヤの操作を受付() : Integer[2]​
+    // ＋接続確認信号送信() : Void
+    
     private ScreenUpdater screenUpdater; // UIへの参照
     private OthelloStub othelloGame; // オセロゲームロジック
     private CPU cpuPlayer; // CPUプレイヤー
