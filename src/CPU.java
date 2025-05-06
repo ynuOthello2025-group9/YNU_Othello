@@ -127,7 +127,6 @@ public class CPU {
             }
 
             Othello.makeMove(tempBoard,move[0], move[1], turn);
-            // othello.placeStone(move[0], move[1], turn.equals("先手") ? 1 : 2, tempBoard);
             int score = -negamax(tempBoard, depth - 1, -color);
             bestScore = Math.max(bestScore, score);
         }
