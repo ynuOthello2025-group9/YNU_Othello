@@ -167,7 +167,7 @@ public class CPU {
         } catch (Exception e) {
             System.err.println("Error in negaalpha: " + e.getMessage());
             e.printStackTrace();
-            return Integer.MIN_VALUE; // エラー時は最小値を返す
+            return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
         }
     }
 
@@ -189,7 +189,7 @@ public class CPU {
                 return null; // パス
             }
 
-            int bestScore = Integer.MIN_VALUE;
+            int bestScore = Integer.MIN_VALUE + 1;
             int[] bestMove = possibleMoves.get(0);
             int color = "Black".equals(turn) ? 1 : -1;
 
@@ -199,7 +199,7 @@ public class CPU {
                     tempBoard[i] = board[i].clone();
                 }
                 Othello.makeMove(tempBoard, move[0], move[1], turn);
-                int score = -negaalpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                int score = -negaalpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                 // System.out.println("CPU: Evaluated move: [" + move[0] + ", " + move[1] + "], Score: " + score);
                 if (score > bestScore) {
                     bestScore = score;

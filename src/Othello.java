@@ -122,8 +122,8 @@ public class Othello {
         }
 
         // 便宜上Stringの手番情報をintの色に変換
-        int player = (turn == "Black") ? BLACK : WHITE;
-        int opponent = (turn == "White") ? BLACK : WHITE;
+        int player = (turn.equals("Black")) ? BLACK : WHITE;
+        int opponent = (turn.equals("White")) ? BLACK : WHITE;
 
         // 設置場所について8方向においてそれぞれ確認するための8方向
         int[][] directions = {
@@ -173,7 +173,7 @@ public class Othello {
     //設置可能場所があるか否か
     public static boolean hasValidMove(Integer[][] tempBoard, String turn) {
 
-        int color = (turn == "Black") ? BLACK : WHITE;
+        int color = (turn.equals("Black")) ? BLACK : WHITE;
 
         if (numberOfStone(tempBoard, color) == 0) {
             return false;
