@@ -68,6 +68,7 @@ public class Othello {
         return turn;
     }
 
+    //盤面（白、黒、空白）と設置可能場所を組み合わせた描画用盤面の生成
     public static Integer[][] getBoard(Integer[][] tempBoard, Integer[][] validMoves) {
         Integer currentBoard[][] = new Integer[SIZE][SIZE];
 
