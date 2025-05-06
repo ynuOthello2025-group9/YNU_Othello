@@ -138,10 +138,6 @@ public void actionPerformed(ActionEvent e) {
     
 }
 
-    public void setClient(Client userClient){
-        this.userClient = userClient;
-    }
-
 // creating main screen
 public void mainScreen(){
 
