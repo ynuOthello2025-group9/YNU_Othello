@@ -1,48 +1,60 @@
 import java.io.*;
 import java.net.*;
 import javax.swing.SwingUtilities;
-import java.util.List;
-// import java.util.Random; // CPUクラスでは使わなくなったので不要かも
-import java.util.concurrent.ExecutorService; //変更
+// import java.util.List; // Othello クラスで List を使う場合は必要
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import javax.swing.JOptionPane; // mainのエラー表示用
+import javax.swing.JOptionPane;
 
 public class Client {
 
-    // 盤面に関する情報 (Othelloクラスと共有)
+    // --- 定数 ---
     private static final int SIZE = 8;
     private static final int EMPTY = 0;
     private static final int BLACK = 1;
     private static final int WHITE = 2;
-    // private static final int CANPLACE = 3; // Othelloクラスで定義済み
+    private static final long HEARTBEAT_INTERVAL_SECONDS = 10;
 
-    private ScreenUpdater screenUpdater; // UIへの参照
-    private CPUStub cpuPlayer; // CPUプレイヤー
-    private String cpuColor; // CPUの色 ("黒" または "白")
+    // --- UI ---
+    private ScreenUpdater screenUpdater;
 
-    // --- Othelloロジック連携 ---
-    private Integer[][] boardState; // 現在の盤面状態 (8x8)
-    private String currentTurn; // 現在の手番 ("黒" または "白")
-    // -------------------------
+    // --- ゲーム状態 ---
+    private Integer[][] boardState;
+    private String currentTurn; // "黒" or "白"
+    private volatile boolean gameActive = false;
+    private String playerColor; // 自分の色 ("黒" or "白")
+    private String opponentName = "Opponent"; // 対戦相手名
+    private boolean isNetworkMatch = false; // モードフラグ
 
-    // ゲームの状態管理用のフラグや情報
-    private boolean isCpuMatch = false; // CPU対戦モードか
-    private volatile boolean isPlayerTurn = false; // 現在プレイヤーの手番か (volatile追加)
-    private String playerColor; // プレイヤーの色 ("黒" または "白")
-    private volatile boolean gameActive = false; // ゲームが進行中か (volatile追加)
+    // --- CPU対戦用リソース ---
+    private CPU cpuPlayer;
+    private String cpuColor;
+    private volatile boolean isPlayerTurnCPU = false; // CPU対戦でのプレイヤーのターンか
+    private ExecutorService cpuExecutor; // null許容、必要時に生成
 
-    // CPU処理用 ExecutorService (変更なし)
-    private ExecutorService cpuExecutor = Executors.newSingleThreadExecutor();
+    // --- ネットワーク対戦用リソース ---
+    private Socket socket;
+    private PrintWriter writer;
+    private BufferedReader reader;
+    private volatile boolean isConnected = false;
+    private Thread receiverThread;
+    private ScheduledExecutorService heartbeatExecutor; // null許容、必要時に生成
+    private String serverAddress = "localhost";
+    private int serverPort = 10000;
+    private String playerName = "Player";
 
-    // コンストラクタ (変更なし)
+
+    /** コンストラクタ */
     public Client(ScreenUpdater screenUpdater) {
         this.screenUpdater = screenUpdater;
         this.boardState = new Integer[SIZE][SIZE];
+        Othello.initBoard(boardState); // 初期盤面
         System.out.println("Client object created.");
     }
 
-    // --- 色表現の変換ヘルパー (変更なし) ---
+    // --- 色変換ヘルパー ---
     private String toOthelloColor(String clientColor) {
         return clientColor.equals("黒") ? "Black" : "White";
     }
@@ -50,390 +62,528 @@ public class Client {
     private String fromOthelloColor(String othelloColor) {
         return othelloColor.equals("Black") ? "黒" : "白";
     }
-    // --------------------------
 
-    // --- ネットワーク関連メソッド (未実装 - 変更なし) ---
-    public void connectToServer(String playerName) { /* ... */ }
-    public void sendOperationToServer(Integer[] operationInfo) { /* ... */ }
-    public Integer[] receiveInfoFromServer() { /* ... */ return new Integer[]{-1, -1}; }
-    public void sendConnectionSignal() { /* ... */ }
-    // -----------------------------------------------------
+    // ============================================
+    // ===== ゲーム開始・終了・共通処理 ==========
+    // ============================================
 
     /**
-     * UIからのゲーム開始要求を受け付ける (CPU生成時の色指定を修正)
+     * ゲーム開始処理 (モード分岐)
      */
-    public void startGame(boolean isCpuMatch, String playerOrder, String cpuStrength) {
-        System.out.println("Game start requested.");
-        System.out.println("  Mode: " + (isCpuMatch ? "CPU Match" : "Network Match"));
+    public void startGame(boolean isCpu, String nameOrColor, String cpuStrengthOrServerAddr, int port) {
+        shutdown(); // 既存のゲームがあれば終了
 
-        this.isCpuMatch = isCpuMatch;
+        this.isNetworkMatch = !isCpu;
+        Othello.initBoard(boardState); // 盤面リセット
+        updateBoardAndUI(boardState);  // UIもリセット
 
-        if (isCpuMatch) {
-            this.playerColor = playerOrder;
+        if (isCpu) {
+            // === CPU対戦モード開始 ===
+            this.playerColor = nameOrColor;
             this.cpuColor = playerColor.equals("黒") ? "白" : "黒";
-            System.out.println("  Player Color: " + playerColor);
-            System.out.println("  CPU Color: " + cpuColor);
-            System.out.println("  CPU Strength: " + cpuStrength);
+            String cpuStrength = cpuStrengthOrServerAddr;
+            this.opponentName = "CPU (" + cpuStrength + ")"; // 相手名を設定
 
-            // ゲーム画面に遷移
+            System.out.println("Starting CPU Match: Player(" + playerColor + ") vs CPU(" + cpuColor + ")");
             screenUpdater.showGameScreen();
 
-            // Othelloロジックで盤面を初期化
-            Othello.initBoard(boardState);
-            currentTurn = "黒"; // オセロは黒が先手
+            // CPUリソース初期化
+            if (cpuExecutor == null || cpuExecutor.isShutdown()) {
+                cpuExecutor = Executors.newSingleThreadExecutor();
+            }
+            cpuPlayer = new CPU(toOthelloColor(cpuColor), cpuStrength);
             gameActive = true;
+            currentTurn = "黒"; // 黒が先手
 
-            // CPUプレイヤーを初期化 (色を "Black"/"White" で渡す)
-            // cpuPlayer = new CPU(toOthelloColor(cpuColor), cpuStrength); // ★修正: 色を変換して渡す
-            cpuPlayer = new CPUStub(toOthelloColor(cpuColor), cpuStrength);
-            System.out.println("CPU player initialized with color: " + toOthelloColor(cpuColor));
-
-            // 初期盤面とステータスをUIに反映 (EDTで実行されることを保証)
-            final Integer[][] boardCopy = copyBoard(boardState);
+            // 最初のターン処理
             SwingUtilities.invokeLater(() -> {
-                 screenUpdater.updateBoard(boardCopy);
-                 updateStatusBasedOnTurn(); // ステータス更新もEDT内で行う
+                updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
+                if (currentTurn.equals(cpuColor)) {
+                    isPlayerTurnCPU = false;
+                    startCpuTurn();
+                } else {
+                    isPlayerTurnCPU = true;
+                    // 初手パスチェック (通常不要)
+                    if (!Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) {
+                        handlePassCPU(currentTurn);
+                    }
+                }
             });
 
-
-            // 最初のターンがCPUの場合、CPUの思考を開始
-            if (currentTurn.equals(cpuColor)) {
-                isPlayerTurn = false;
-                // updateStatusBasedOnTurn(); // ここで呼ぶとinvokeLaterの外になる可能性 -> 上のinvokeLater内に移動
-                startCpuTurn();
-            } else {
-                isPlayerTurn = true;
-                // updateStatusBasedOnTurn(); // ここで呼ぶとinvokeLaterの外になる可能性 -> 上のinvokeLater内に移動
-                // プレイヤーの初手パスチェック (通常不要だが念のため)
-                 if (!Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) {
-                     handlePass(currentTurn); // EDTから呼ばれるstartGame内なので安全
-                 }
-            }
         } else {
-            // ネットワーク対戦の初期化処理 (未実装)
-            connectToServer("PlayerName"); // 仮のプレイヤ名
+            // === ネットワーク対戦モード開始 ===
+            this.playerName = nameOrColor;
+            this.serverAddress = cpuStrengthOrServerAddr;
+            this.serverPort = port;
+            this.opponentName = "?"; // サーバーから受け取るまで不明
+
+            System.out.println("Starting Network Match: Player(" + playerName + ") connecting to " + serverAddress + ":" + serverPort);
+            screenUpdater.showGameScreen();
+            updateStatusAndUI(null, "サーバーに接続中...", null);
+
+            // 接続は別スレッドで
+            new Thread(this::connectToServer).start();
         }
     }
 
     /**
-     * 現在の手番に基づいてUIのステータス表示を更新する (変更なし、呼び出し元がEDTであることを確認)
+     * 汎用的な盤面更新とUI反映
      */
-    private void updateStatusBasedOnTurn() {
-        if (!gameActive) return;
-
-        String message;
-        if (currentTurn.equals(playerColor)) {
-            message = "あなたの番です。石を置いてください。";
-        } else {
-            message = "CPU (" + cpuColor + ") の番です。";
-        }
-        // UI更新はEDTで行う (このメソッド自体がEDTから呼ばれる想定)
-        screenUpdater.updateStatus(currentTurn, message);
+    private void updateBoardAndUI(Integer[][] newBoardState) {
+         // 必要なら boardState を更新
+         if (newBoardState != null) {
+             // 簡易的なコピー (より安全なコピーが必要な場合あり)
+             for(int i=0; i<SIZE; i++) {
+                 this.boardState[i] = newBoardState[i].clone();
+             }
+         }
+         // UI更新は常にEDTで
+         final Integer[][] boardCopy = copyBoard(this.boardState); // UI用にコピー
+         SwingUtilities.invokeLater(() -> screenUpdater.updateBoard(boardCopy));
     }
 
     /**
-     * ScreenUpdaterからプレイヤーの操作を受け取る (変更なし)
+     * 汎用的なステータス更新とUI反映
+     */
+    private void updateStatusAndUI(String turn, String message, String opponent) {
+        final String currentOpponent = (opponent != null) ? opponent : this.opponentName;
+        SwingUtilities.invokeLater(() -> screenUpdater.updateStatus(turn, message, currentOpponent));
+    }
+
+    /**
+     * 現在のターンに応じたメッセージを取得
+     */
+    private String getTurnMessage() {
+        if (!gameActive) return "ゲーム終了";
+
+        boolean myTurn;
+        if (isNetworkMatch) {
+            myTurn = currentTurn != null && currentTurn.equals(playerColor);
+        } else {
+            myTurn = currentTurn != null && currentTurn.equals(playerColor); // CPU対戦でも playerColor を使う
+        }
+
+        if (myTurn) {
+            return "あなたの番です。";
+        } else {
+            String opponentDisplay = isNetworkMatch ? opponentName : "CPU";
+            String opponentActualColor = (playerColor == null) ? "?" : (playerColor.equals("黒") ? "白" : "黒");
+            return opponentDisplay + " (" + opponentActualColor + ") の番です。";
+        }
+    }
+
+
+    /**
+     * ゲーム終了処理 (共通部分)
+     * @param winnerColor "Black", "White", "Draw", またはエラー/切断情報など
+     * @param reason Pass, BoardFull, Timeout, Disconnect など
+     */
+    private void processGameEnd(String winnerColor, String reason) {
+        if (!gameActive) return; // 二重実行防止
+        gameActive = false;
+        System.out.println("Game Ending. Reason: " + reason + ", Winner(Othello): " + winnerColor);
+
+        String resultMessage;
+        String score = "";
+
+        // 勝敗メッセージ作成
+        if (winnerColor.equals("Draw")) {
+            resultMessage = "引き分け";
+        } else if (winnerColor.equals("Black") || winnerColor.equals("White")) {
+            resultMessage = fromOthelloColor(winnerColor) + " の勝ち";
+            // スコア計算 (CPU対戦またはサーバーから盤面が確定している場合)
+             if (!isNetworkMatch || reason.equals("Pass") || reason.equals("BoardFull")) {
+                 int blackCount = 0, whiteCount = 0;
+                 for (int i = 0; i < SIZE; i++) for (int j = 0; j < SIZE; j++) {
+                     if (boardState[i][j] == BLACK) blackCount++; else if (boardState[i][j] == WHITE) whiteCount++;
+                 }
+                 score = " [黒:" + blackCount + " 白:" + whiteCount + "]";
+             }
+        } else {
+             // タイムアウトや切断の場合など
+             resultMessage = winnerColor; // そのまま表示
+        }
+
+
+        String prefix = "";
+        if (reason.equals("Pass")) prefix = "両者パス。";
+        if (reason.equals("BoardFull")) prefix = "盤面 заполнен。"; // "埋まり" is better Japanese
+        if (reason.equals("Timeout")) prefix = "タイムアウト。";
+        if (reason.equals("Disconnect")) prefix = "相手切断。";
+
+
+        final String finalMessage = prefix + "ゲーム終了 結果: " + resultMessage + score;
+
+        // UIに結果表示
+        updateStatusAndUI("ゲーム終了", finalMessage, opponentName);
+        // ダイアログ表示 (ネットワーク対戦の結果通知とかぶる可能性あり)
+        // SwingUtilities.invokeLater(()-> JOptionPane.showMessageDialog(screenUpdater, finalMessage, "ゲーム結果", JOptionPane.INFORMATION_MESSAGE));
+
+
+        // モードに応じたリソース解放 (shutdownメソッドに任せる方が良いかも)
+        // if (isNetworkMatch) stopHeartbeat(); else shutdownCpuResources();
+        // isConnected = false; // ネットワークの場合
+    }
+
+    /**
+     * 全リソースの解放処理 (アプリケーション終了時など)
+     */
+    public void shutdown() {
+        if(!gameActive && !isConnected && (cpuExecutor == null || cpuExecutor.isShutdown())) {
+             // System.out.println("Shutdown: No active resources found.");
+             return; // すでにシャットダウン済みか不要
+        }
+        System.out.println("Client shutdown initiated...");
+        gameActive = false; // ゲームを非アクティブに
+
+        shutdownNetworkResources(); // ネットワークリソース解放
+        shutdownCpuResources();     // CPUリソース解放
+
+        System.out.println("Client shutdown process complete.");
+    }
+
+    /** ネットワークリソースのクリーンアップ */
+    private synchronized void shutdownNetworkResources() {
+        if (!isConnected && socket == null) return;
+        System.out.println("Shutting down network resources...");
+        isConnected = false;
+        stopHeartbeat();
+        if (receiverThread != null && receiverThread.isAlive()) {
+            receiverThread.interrupt();
+            try { receiverThread.join(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+        receiverThread = null;
+        try { if (writer != null) writer.close(); } catch (Exception e) {}
+        try { if (reader != null) reader.close(); } catch (Exception e) {}
+        try { if (socket != null && !socket.isClosed()) socket.close(); } catch (IOException e) {}
+        writer = null; reader = null; socket = null;
+        System.out.println("Network resources shut down.");
+    }
+
+     /** CPUリソースのクリーンアップ */
+    private synchronized void shutdownCpuResources() {
+        if (cpuExecutor != null && !cpuExecutor.isShutdown()) {
+            System.out.println("Shutting down CPU executor...");
+            cpuExecutor.shutdown();
+            try {
+                if (!cpuExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    cpuExecutor.shutdownNow();
+                }
+                 System.out.println("CPU executor shut down.");
+            } catch (InterruptedException e) {
+                cpuExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        // cpuExecutor = null; // 必要なら
+    }
+
+
+    // ============================================
+    // ===== プレイヤー操作ハンドラ =============
+    // ============================================
+
+    /**
+     * UIからのプレイヤー操作ハンドラ
      */
     public void handlePlayerMove(int row, int col) {
-        System.out.println("Client: Player attempted move at (" + row + "," + col + ")");
-        // ゲーム中 かつ プレイヤーのターン かつ プレイヤーの色と現在の手番が一致する場合のみ処理
-        if (!gameActive || !isPlayerTurn || !currentTurn.equals(playerColor)) {
-            System.out.println("Client: Ignoring player move (Not player's turn, game not active, or turn mismatch).");
-            if (gameActive && !isPlayerTurn) {
-                 SwingUtilities.invokeLater(() -> screenUpdater.updateStatus(currentTurn, "CPUの番です。"));
-            } else if (gameActive && !currentTurn.equals(playerColor)) {
-                 // 万が一 currentTurn と playerColor が不一致の場合
-                 System.err.println("Error: Turn mismatch! currentTurn=" + currentTurn + ", playerColor=" + playerColor);
-                 SwingUtilities.invokeLater(() -> screenUpdater.updateStatus(currentTurn, "内部エラー：ターンの不一致"));
-            }
+        if (!gameActive) {
+            System.out.println("Ignoring move: Game not active.");
             return;
         }
 
-        // Othelloロジックで設置可能か判定 (色は"Black"/"White"に変換)
-        if (Othello.isValidMove(boardState, row, col, toOthelloColor(currentTurn))) {
-            System.out.println("Client: Valid move.");
-            // 有効な手なので盤面に反映 (色は"Black"/"White"に変換)
-            Othello.makeMove(boardState, row, col, toOthelloColor(currentTurn));
-
-            // UI更新 (EDTで) - 盤面コピーを忘れずに
-            final Integer[][] boardCopy = copyBoard(boardState);
-            SwingUtilities.invokeLater(() -> screenUpdater.updateBoard(boardCopy));
-
-            // 手番交代と次の処理へ (このメソッドはEDTから呼ばれるので、switchTurnもEDTで実行される)
-            switchTurn();
+        if (isNetworkMatch) {
+            // === ネットワーク対戦 ===
+            boolean myTurn = currentTurn != null && currentTurn.equals(playerColor);
+            if (!myTurn) {
+                 System.out.println("Ignoring move: Not your turn (Network).");
+                 updateStatusAndUI(currentTurn, "相手の番です。", opponentName);
+                 return;
+            }
+            // 簡易バリデーション
+            if (row < 0 || row >= SIZE || col < 0 || col >= SIZE || boardState[row][col] != EMPTY) {
+                 System.out.println("Ignoring move: Invalid position (Network).");
+                 updateStatusAndUI(currentTurn, "そこには置けません。", opponentName);
+                 return;
+            }
+            sendMoveToServer(row, col); // サーバーに送信
 
         } else {
-            System.out.println("Client: Invalid move.");
-            // 無効な手の場合のユーザーへの通知 (EDTで)
-             SwingUtilities.invokeLater(() -> screenUpdater.updateStatus(currentTurn, "そこには置けません。"));
+            // === CPU対戦 ===
+            if (!isPlayerTurnCPU) {
+                 System.out.println("Ignoring move: Not your turn (CPU).");
+                 return;
+            }
+            if (Othello.isValidMove(boardState, row, col, toOthelloColor(playerColor))) {
+                Othello.makeMove(boardState, row, col, toOthelloColor(playerColor));
+                updateBoardAndUI(boardState); // 盤面更新
+                // ゲーム終了チェックをしてからターン交代
+                if (!checkGameOverCPU()) {
+                    switchTurnCPU(); // ターン交代
+                }
+            } else {
+                System.out.println("Invalid move (CPU).");
+                updateStatusAndUI(currentTurn, "そこには置けません。", opponentName);
+            }
+        }
+    }
+
+    // ============================================
+    // ===== CPU対戦モード固有メソッド ============
+    // ============================================
+
+    private void startCpuTurn() { /* ... (変更なし、UI更新は updateStatusAndUI を使うようにしても良い) ... */
+         if (!gameActive || !currentTurn.equals(cpuColor) || isNetworkMatch) return;
+         isPlayerTurnCPU = false;
+         updateStatusAndUI(currentTurn, "CPU (" + cpuColor + ") が考えています...", opponentName);
+         if (cpuExecutor.isShutdown()) cpuExecutor = Executors.newSingleThreadExecutor();
+         cpuExecutor.submit(this::handleCpuTurn);
+    }
+
+    private void handleCpuTurn() { /* ... (変更なし、UI更新は updateStatusAndUI を使うようにしても良い) ... */
+         if (!gameActive || !currentTurn.equals(cpuColor) || isNetworkMatch) return;
+         final int[] cpuMove = cpuPlayer.getCPUOperation(boardState);
+         SwingUtilities.invokeLater(() -> {
+             if (!gameActive || !currentTurn.equals(cpuColor) || isNetworkMatch) return;
+             if (cpuMove != null && cpuMove[0] != -1) {
+                 Othello.makeMove(boardState, cpuMove[0], cpuMove[1], toOthelloColor(currentTurn));
+                 updateBoardAndUI(boardState);
+                 updateStatusAndUI(currentTurn, "CPU が ("+ cpuMove[0] + "," + cpuMove[1] + ") に置きました。", opponentName);
+                 if (!checkGameOverCPU()) switchTurnCPU(); // 終了チェック後にターン交代
+             } else {
+                 handlePassCPU(currentTurn); // CPUもパス
+             }
+         });
+    }
+
+    private void switchTurnCPU() { /* ... (変更なし、UI更新は updateStatusAndUI を使う) ... */
+        if (!gameActive || isNetworkMatch) return;
+        currentTurn = (currentTurn.equals("黒")) ? "白" : "黒";
+        // checkGameOverCPU は終了時に processGameEnd を呼ぶので、ここではチェック不要
+        if (!Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) {
+            handlePassCPU(currentTurn); // 次の人がパス
+        } else {
+            updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
+            if (currentTurn.equals(cpuColor)) {
+                startCpuTurn();
+            } else {
+                isPlayerTurnCPU = true;
+            }
+        }
+    }
+
+    private void handlePassCPU(String passingPlayerColor) { /* ... (変更なし、UI更新は updateStatusAndUI を使う) ... */
+        if (!gameActive || isNetworkMatch) return;
+        System.out.println("CPU Mode: " + passingPlayerColor + " passes.");
+        updateStatusAndUI(passingPlayerColor, passingPlayerColor + " はパスしました。", opponentName);
+        currentTurn = (currentTurn.equals("黒")) ? "白" : "黒"; // 手番を戻す
+        // 戻した人もパスできるかチェック
+        if (!Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) {
+             System.out.println("CPU Mode: Both players pass. Game Over.");
+             processGameEnd(Othello.judgeWinner(boardState), "Pass"); // 終了処理
+        } else {
+             // 戻した人は打てる
+             updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
+             if (currentTurn.equals(cpuColor)) {
+                 startCpuTurn();
+             } else {
+                 isPlayerTurnCPU = true;
+             }
+        }
+    }
+
+    private boolean checkGameOverCPU() { /* ... (変更なし、終了時に processGameEnd を呼ぶ) ... */
+        if (!gameActive || isNetworkMatch) return true;
+        boolean blackCanMove = Othello.hasValidMove(boardState, "Black");
+        boolean whiteCanMove = Othello.hasValidMove(boardState, "White");
+        int emptyCount = 0;
+        for (int i = 0; i < SIZE; i++) for (int j = 0; j < SIZE; j++) if (boardState[i][j] == EMPTY) emptyCount++;
+
+        boolean isOver = (!blackCanMove && !whiteCanMove) || emptyCount == 0;
+        if (isOver) {
+             processGameEnd(Othello.judgeWinner(boardState), (!blackCanMove && !whiteCanMove) ? "Pass" : "BoardFull");
+        }
+        return isOver;
+    }
+
+    // endGameCPU は processGameEnd に統合されたので削除
+
+
+    // ============================================
+    // ===== ネットワーク対戦モード固有メソッド ===
+    // ============================================
+
+    private void connectToServer() { /* ... (変更なし、UI更新は updateStatusAndUI を使う) ... */
+         try {
+             updateStatusAndUI(null, "サーバーに接続中...", null);
+             socket = new Socket(serverAddress, serverPort);
+             writer = new PrintWriter(socket.getOutputStream(), true);
+             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             isConnected = true;
+             System.out.println("Connected to server: " + serverAddress + ":" + serverPort);
+             writer.println(playerName); // 名前送信
+             receiverThread = new Thread(this::receiveMessages);
+             receiverThread.start();
+             startHeartbeat();
+             updateStatusAndUI(null, "接続完了、相手待機中...", null);
+             gameActive = true;
+         } catch (IOException e) {
+             isConnected = false; gameActive = false;
+             final String errorMsg = "接続できませんでした: " + e.getMessage();
+             System.err.println("サーバー接続失敗: " + e);
+             updateStatusAndUI("接続失敗", errorMsg, null);
+             SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(screenUpdater, errorMsg, "接続エラー", JOptionPane.ERROR_MESSAGE));
+             shutdownNetworkResources();
+         }
+    }
+
+    private void receiveMessages() { /* ... (変更なし、終了処理で shutdownNetworkResources を呼ぶ) ... */
+         try {
+             String line;
+             while (isConnected && (line = reader.readLine()) != null) {
+                 System.out.println("Received: " + line);
+                 handleServerMessage(line);
+             }
+         } catch (IOException e) {
+             if (isConnected) {
+                 System.err.println("サーバー接続切れ: " + e);
+                 updateStatusAndUI("接続切れ", "サーバー接続が失われました。", opponentName);
+                 processGameEnd("相手切断", "Disconnect"); // ゲーム終了扱い
+             }
+         } finally {
+             System.out.println("Receiver thread finished.");
+             shutdownNetworkResources(); // ネットワークリソースをクリーンアップ
+         }
+    }
+
+    private void handleServerMessage(String message) { /* ... (変更なし、UI更新は updateStatusAndUI, 盤面更新は updateBoardAndUI) ... */
+        String[] parts = message.split(":", 2);
+        String command = parts[0];
+        String value = parts.length > 1 ? parts[1] : "";
+
+        // UI更新や状態変更はEDTで行う (processGameEnd内でもinvokeLaterされる)
+        SwingUtilities.invokeLater(() -> {
+            if (!isNetworkMatch && !command.equals("ERROR")) return;
+
+            switch (command) {
+                case "YOUR COLOR":
+                    playerColor = value;
+                    updateStatusAndUI(currentTurn, "あなたは " + playerColor + " です。", opponentName);
+                    break;
+                case "OPPONENT":
+                    opponentName = value;
+                    updateStatusAndUI(currentTurn, "対戦相手: " + opponentName, opponentName);
+                    break;
+                case "BOARD":
+                    updateBoardFromString(value); // boardStateを更新
+                    updateBoardAndUI(null); // UIに反映 (引数はnullでOK)
+                    break;
+                case "TURN":
+                    currentTurn = value;
+                    updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
+                    break;
+                case "MESSAGE":
+                    updateStatusAndUI(currentTurn, value, opponentName);
+                    break;
+                case "GAMEOVER":
+                    // サーバーからのゲームオーバー通知
+                    // value には "勝敗 [スコア]" が入っている想定
+                    processGameEnd(value, "Server"); // サーバーからの通知として処理
+                    break;
+                case "ERROR":
+                    System.err.println("Server Error: " + value);
+                    updateStatusAndUI("エラー", "サーバーエラー: " + value, opponentName);
+                    JOptionPane.showMessageDialog(screenUpdater, "サーバーエラー:\n" + value, "エラー", JOptionPane.ERROR_MESSAGE);
+                    break;
+                default:
+                    System.out.println("Unknown command: " + command);
+            }
+        });
+    }
+
+    /**
+     * 盤面文字列からboardStateを更新
+     */
+    private void updateBoardFromString(String boardStr) {
+        if (boardStr.length() == SIZE * SIZE) {
+            for (int i = 0; i < SIZE; i++) {
+                for (int j = 0; j < SIZE; j++) {
+                    char c = boardStr.charAt(i * SIZE + j);
+                    // '0', '1', '2' を Integer に変換
+                    boardState[i][j] = Character.getNumericValue(c);
+                }
+            }
+             System.out.println("Board state updated from server.");
+        } else {
+            System.err.println("Received invalid board string length: " + boardStr.length());
+        }
+    }
+
+    private void sendMoveToServer(int row, int col) { /* ... (変更なし、UI更新は updateStatusAndUI を使う) ... */
+         if (writer != null && isConnected && gameActive) {
+             String message = "MOVE:" + row + "," + col;
+             writer.println(message);
+             System.out.println("Sent: " + message);
+             updateStatusAndUI(currentTurn, "サーバー応答待ち...", opponentName);
+         }
+    }
+
+    // Clientクラスに追加 (ScreenUpdaterから呼ばれる)
+    public void sendPassToServer() { /* ... (変更なし、UI更新は updateStatusAndUI を使う) ... */
+        if (writer != null && isConnected && gameActive) {
+             String message = "PASS";
+             writer.println(message);
+             System.out.println("Sent: " + message);
+             updateStatusAndUI(currentTurn, "パスしました。", opponentName);
+        }
+    }
+
+    private void startHeartbeat() {
+        if (heartbeatExecutor == null || heartbeatExecutor.isShutdown()) {
+            heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
+        }
+        heartbeatExecutor.scheduleAtFixedRate(() -> {
+            if (writer != null && isConnected) {
+                writer.println("PING");
+                // System.out.println("Sent PING"); // デバッグ出力は必要に応じて
+            } else {
+                stopHeartbeat(); // 送信先がないなら停止
+            }
+        }, 0, HEARTBEAT_INTERVAL_SECONDS, TimeUnit.SECONDS);
+        System.out.println("Heartbeat started (Interval: " + HEARTBEAT_INTERVAL_SECONDS + "s).");
+    }
+    private void stopHeartbeat() {
+        if (heartbeatExecutor != null && !heartbeatExecutor.isShutdown()) {
+            heartbeatExecutor.shutdown();
+            try {
+                // 念のため終了を待つ
+                if (!heartbeatExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    heartbeatExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                heartbeatExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+            heartbeatExecutor = null;
+            System.out.println("Heartbeat stopped.");
         }
     }
 
      /**
      * 盤面データを安全にコピーするヘルパーメソッド (変更なし)
      */
-     private Integer[][] copyBoard(Integer[][] originalBoard) {
+    private Integer[][] copyBoard(Integer[][] originalBoard) {
          if (originalBoard == null) return null;
          Integer[][] copy = new Integer[SIZE][SIZE];
          for (int i = 0; i < SIZE; i++) {
-             if (originalBoard[i] != null) { // nullチェック追加
+             if (originalBoard[i] != null) {
                  System.arraycopy(originalBoard[i], 0, copy[i], 0, SIZE);
              }
          }
          return copy;
-     }
-
-    /**
-     * 手番を交代し、次の手番の処理（パス判定、CPUターン開始、ゲーム終了判定）を行う (変更なし)
-     * このメソッドはプレイヤー操作後(EDT)またはCPU処理完了後(EDT)に呼ばれる想定
-     */
-    private void switchTurn() {
-        if (!gameActive) return; // ゲーム終了後は何もしない
-
-        // 手番を変更
-        currentTurn = (currentTurn.equals("黒")) ? "白" : "黒";
-        System.out.println("Client: Turn switched to " + currentTurn);
-
-        // ゲーム終了判定 (checkGameOver内でendGameが呼ばれる可能性あり)
-        if (checkGameOver()) {
-            return; // ゲームが終了した
-        }
-
-        // 次の手番のプレイヤーが置ける場所があるか確認 (色は"Black"/"White"に変換)
-        if (!Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) {
-            // 置ける場所がない場合、パス処理
-            handlePass(currentTurn); // handlePassもEDTで実行される
-        } else {
-            // 置ける場所がある場合
-            updateStatusBasedOnTurn(); // UIステータス更新 (EDTで実行される)
-            if (currentTurn.equals(cpuColor)) {
-                // 次がCPUの番ならCPUターン開始
-                isPlayerTurn = false;
-                startCpuTurn(); // 非同期でCPU処理を開始
-            } else {
-                // 次がプレイヤーの番なら操作可能にする
-                isPlayerTurn = true;
-                 // プレイヤーへのメッセージ更新は updateStatusBasedOnTurn で行われる
-            }
-        }
     }
 
-    /**
-    * パス処理を行う (変更なし)
-    * このメソッドは switchTurn (EDT) または handleCpuTurn (EDT経由) から呼ばれる想定
-    * @param passingPlayerColor パスするプレイヤーの色 ("黒" or "白")
-    */
-    private void handlePass(String passingPlayerColor) {
-       if (!gameActive) return; // ゲーム終了後は何もしない
-
-       System.out.println("Client: " + passingPlayerColor + " has no valid moves. Passing.");
-       final String msg = passingPlayerColor + " はパスしました。";
-       // UI更新 (EDTで実行される)
-       screenUpdater.updateStatus(passingPlayerColor, msg); // updateStatus内でinvokeLaterされる
-
-       // パスしたので、再度手番を相手に戻す
-       currentTurn = (currentTurn.equals("黒")) ? "白" : "黒";
-       System.out.println("Client: Turn switched back to " + currentTurn);
-
-       // ゲーム終了判定（両者パスの場合 - checkGameOver内で判定)
-       if (checkGameOver()) {
-           return;
-       }
-
-        // 相手（手番が戻った方）が置けるか再度確認 (色は"Black"/"White"に変換)
-        if (!Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) {
-            // 相手も置けない場合 -> 両者パスでゲーム終了
-             System.out.println("Client: " + currentTurn + " also has no valid moves. Game Over.");
-             // checkGameOver で両者パスは検知されるはずだが、念のためここでも endGame を呼ぶ
-             endGame(true); // 両者パスによる終了
-        } else {
-             // 相手は置ける場合、そのプレイヤーのターンを継続
-             System.out.println("Client: " + currentTurn + " has valid moves. Turn continues.");
-             updateStatusBasedOnTurn(); // ステータス更新 (EDTで実行される)
-             if (currentTurn.equals(cpuColor)) {
-                 isPlayerTurn = false;
-                 startCpuTurn(); // 非同期でCPU処理を開始
-             } else {
-                 isPlayerTurn = true;
-             }
-        }
-    }
-
-    /**
-     * CPUの手番処理を開始（非同期実行）(変更なし)
-     */
-    private void startCpuTurn() {
-        if (!gameActive || !currentTurn.equals(cpuColor)) {
-            System.out.println("Client: CPU turn start skipped (Game not active or not CPU's turn).");
-            return;
-        }
-        isPlayerTurn = false; // CPUターン開始時にプレイヤー操作を不可に
-        // ステータスを「CPU思考中」などに更新しても良い
-        screenUpdater.updateStatus(currentTurn, "CPU (" + cpuColor + ") が考えています...");
-
-        System.out.println("Client: Submitting CPU turn task to executor...");
-        cpuExecutor.submit(this::handleCpuTurn); // 別スレッドで実行依頼
-    }
-
-    /**
-     * CPUの手番処理本体 (ExecutorServiceのスレッドで実行される) (変更なし)
-     */
-    private void handleCpuTurn() {
-        // このメソッド自体はワーカースレッドで実行される
-        System.out.println("Client: CPU turn processing starts in worker thread.");
-
-        // 実行開始時点での状態を再確認
-        if (!gameActive || !currentTurn.equals(cpuColor)) {
-             System.out.println("Client: CPU turn processing aborted (Game ended or not CPU's turn anymore).");
-             return;
-        }
-
-        // CPUに最善手を計算させる (時間がかかる可能性のある処理)
-        final int[] cpuMove = cpuPlayer.getCPUOperation(boardState);
-
-        // --- UI更新やゲーム状態変更はEDTで行う ---
-        SwingUtilities.invokeLater(() -> {
-            // EDT実行直前にも状態を再確認 (CPU計算中に状態が変わった可能性)
-            if (!gameActive || !currentTurn.equals(cpuColor)) {
-                System.out.println("Client: CPU turn result ignored (Game ended or turn changed during processing).");
-                return;
-            }
-
-            if (cpuMove != null && cpuMove[0] != -1) { // パスでない場合 (cpuMoveがnullまたは{-1,-1}でない)
-                System.out.println("Client: CPU decided move at (" + cpuMove[0] + "," + cpuMove[1] + ")");
-                // CPUの手を盤面に反映 (色は"Black"/"White"に変換)
-                Othello.makeMove(boardState, cpuMove[0], cpuMove[1], toOthelloColor(currentTurn));
-
-                // UI更新 (盤面とステータス)
-                final Integer[][] boardCopy = copyBoard(boardState); // UI更新用にコピー
-                screenUpdater.updateBoard(boardCopy);
-                screenUpdater.updateStatus(currentTurn, "CPU が ("+ cpuMove[0] + "," + cpuMove[1] + ") に置きました。");
-
-                // 手番交代と次の処理へ (EDT内で実行される)
-                switchTurn();
-
-            } else {
-                // CPUが置ける場所がない場合（パス）
-                System.out.println("Client: CPU has no valid moves. Passing.");
-                // パス処理へ (EDT内で実行される)
-                handlePass(currentTurn);
-            }
-        });
-        // --------------------------------------
-        System.out.println("Client: CPU turn processing finished in worker thread, submitted result to EDT.");
-    }
-
-    /**
-     * ゲーム終了条件をチェックし、終了していれば endGame を呼び出す (変更なし)
-     * @return ゲームが終了した場合は true, それ以外は false
-     */
-    private boolean checkGameOver() {
-        if (!gameActive) return true; // すでに終了している
-
-        // hasValidMove は Othello クラスの色表現 ("Black"/"White") を使う
-        boolean blackCanMove = Othello.hasValidMove(boardState, "Black");
-        boolean whiteCanMove = Othello.hasValidMove(boardState, "White");
-
-        // 両者とも置けない場合、ゲーム終了
-        if (!blackCanMove && !whiteCanMove) {
-            System.out.println("Client: Game Over Check - No valid moves for both players.");
-            endGame(true); // true: 両者パスによる終了
-            return true;
-        }
-
-        // 盤面がすべて埋まった場合もゲーム終了 (石を数える)
-        int emptyCount = 0;
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                if (boardState[i][j] == EMPTY) {
-                    emptyCount++;
-                    break; // 一つでも空きがあればループを抜ける
-                }
-            }
-             if (emptyCount > 0) break;
-        }
-        if (emptyCount == 0) {
-             System.out.println("Client: Game Over Check - Board is full.");
-             endGame(false); // false: 盤面埋まりによる終了
-             return true;
-        }
-
-        return false; // ゲームは続く
-    }
-
-    /**
-     * ゲーム終了処理 (変更なし)
-     * このメソッドは checkGameOver (EDT) から呼ばれる想定
-     * @param showPassMessage 両者パスによる終了の場合 true
-     */
-    private void endGame(boolean showPassMessage) {
-        if (!gameActive) return; // 既に終了処理済みなら何もしない
-
-        gameActive = false;
-        isPlayerTurn = false; // 操作不可に
-        System.out.println("Client: Game has ended.");
-
-        // 勝敗判定 (Othelloクラスの色表現で結果が返る)
-        final String winnerOthelloColor = Othello.judgeWinner(boardState);
-        final String resultMessage;
-        if (winnerOthelloColor.equals("Draw")) {
-            resultMessage = "引き分け";
-        } else {
-            String winnerClientColor = fromOthelloColor(winnerOthelloColor); // UI表示用に変換
-            resultMessage = winnerClientColor + " の勝ち";
-        }
-
-        // 石の数を数える
-        int blackCount = 0;
-        int whiteCount = 0;
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                 if (boardState[i][j] == BLACK) blackCount++;
-                 else if (boardState[i][j] == WHITE) whiteCount++;
-            }
-        }
-        final String score = " [黒:" + blackCount + " 白:" + whiteCount + "]";
-
-        final String finalMessage = (showPassMessage ? "両者パス。": "") + "ゲーム終了 結果: " + resultMessage + score;
-
-        // UIに結果を表示 (EDTで実行される)
-        screenUpdater.updateStatus("ゲーム終了", finalMessage); // updateStatus内でinvokeLaterされる
-
-        // ExecutorServiceのシャットダウンはアプリケーション終了時に行う方が良い
-        // shutdown();
-    }
-
-    /**
-     * アプリケーション終了時のリソース解放処理 (変更なし)
-     */
-    public void shutdown() {
-        gameActive = false; // ゲームを非アクティブに
-        if (cpuExecutor != null && !cpuExecutor.isShutdown()) {
-             System.out.println("Shutting down CPU executor...");
-             // 実行中のタスクに割り込みを試み、新規タスクを受け付けない
-             cpuExecutor.shutdownNow(); // shutdown()より強制的な停止を試みる
-             try {
-                 // シャットダウン完了まで待機（最大5秒）
-                 if (!cpuExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-                     System.err.println("CPU executor did not terminate in the specified time.");
-                     // 必要であればさらなる強制終了処理
-                 } else {
-                      System.out.println("CPU executor shut down successfully.");
-                 }
-             } catch (InterruptedException ie) {
-                 // awaitTermination中に割り込みが発生した場合
-                 cpuExecutor.shutdownNow(); // 再度強制シャットダウンを試みる
-                 Thread.currentThread().interrupt(); // 割り込みステータスを再設定
-                 System.err.println("CPU executor shutdown interrupted.");
-             }
-        }
-         System.out.println("Client shutdown complete.");
-         // ネットワークリソースの解放処理も必要ならここに追加
-    }
-
-    /**
-     * メインメソッド（アプリケーションのエントリーポイント）(変更なし)
-     */
+    // --- main メソッド ---
     public static void main(String[] args) {
         // Swing GUIはEDTで作成・操作する必要がある
         SwingUtilities.invokeLater(() -> {
@@ -470,4 +620,9 @@ public class Client {
             }
         });
     }
+
+    // --- ゲッター (ScreenUpdaterから参照される可能性のあるもの) ---
+    public boolean isNetworkMatch() { return isNetworkMatch; }
+    public String getPlayerColor() { return playerColor; }
+
 }
