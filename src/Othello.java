@@ -393,7 +393,7 @@ public class Othello {
 
         // 一応ここではvalidMovesはいらない
         printBoard(testBoard, testValidMoves);
-        judgeWinner(testBoard);
+        System.out.println(judgeWinner(testBoard));
 
     }
 }
