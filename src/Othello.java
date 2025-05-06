@@ -20,7 +20,11 @@ public class Othello {
     // コンストラクタ（そもそもインスタンスの生成は必要？？）
     public Othello() {
         initBoard(); // 盤面の初期化
-        turn = "Black"; // 先手は黒
+        initTurn();
+    }
+
+    public static void initTurn(){
+        turn = "Black"; //先手は黒
     }
 
     // 盤面初期化メソッド
@@ -204,11 +208,7 @@ public class Othello {
     }
 
     // ある色が自分の番において設置可能場所があるかどうかを返すメソッド
-    public static boolean hasValidMoves(String turn) {
-
-        int[][] validMoves = new int[SIZE][SIZE];
-
-        validMoves = getValidMoves(board, turn);
+    public static boolean hasValidMoves(int[][] validMoves, String turn) {
 
         // 全てのマスを走査し
         for (int x = 0; x < SIZE; x++) {
@@ -266,18 +266,19 @@ public class Othello {
 
     // テスト実行用
     public static void main(String[] args) {
+
+        // ↓2行にするかこっちか
         // Othello othello = new Othello();
 
         initBoard();
-
-        turn = "Black";
+        initTurn();
 
         while (true) {
 
             validMoves = getValidMoves(board, turn);
 
             printBoard(validMoves);
-            if (hasValidMoves(turn)) {
+            if (hasValidMoves(validMoves, turn)) {
 
                 int x = -1, y = -1;
 
@@ -325,13 +326,18 @@ public class Othello {
 
             } else {
                 System.out.println(turn + "はパスします。");
-                if (!(hasValidMoves(opponent(turn))))
+                validMoves = getValidMoves(board, opponent(turn));
+                if (!(hasValidMoves(validMoves, opponent(turn))))
                     break;
+                // if (isFinished(opponentMove[]))
+                //     break;
             }
 
             changeTurn();
         }
 
+        
+        //一応ここではvalidMovesはいらない
         printBoard(validMoves);
         judgeWinner();
 
