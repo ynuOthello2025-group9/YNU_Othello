@@ -11,6 +11,9 @@ public class UI extends JFrame implements ActionListener {
 CardLayout cardLayout;
 JPanel panel;
 Color bgColor = new Color(200, 220, 255);
+Client client;
+boolean isVsCpu=true;
+
 
 // main screen components
 JPanel panel1;
@@ -63,7 +66,6 @@ JLabel gamescreen_label_turnplayer;
 JButton gamescreen_button_surrender;
 
 
-//dialogue popup components
 public UI(String title, Client userClient){
     super(title);
     this.userClient = userClient;
@@ -110,7 +112,13 @@ public void actionPerformed(ActionEvent e) {
             cardLayout.show(panel,"gamescreen");
             break;
         case "loginscreen_choseok":
-            cardLayout.show(panel,"gamescreen");
+            if(client.connectToServer(loginscreen_textarea_name.getText())){
+                isVsCpu=false;
+                gamescreen_button_surrender.setEnabled(false);
+                cardLayout.show(panel,"gamescreen");   
+            }else{
+                cardLayout.show(panel,"playerchoicescreen");
+            }
             break;   
         case "gamescreen_chosesurrender":
             cardLayout.show(panel,"mainscreen");
@@ -122,8 +130,16 @@ public void actionPerformed(ActionEvent e) {
         case "cpuchoicescreen_chosesecond":
             cpuchoicescreen_button_gofirst.setBackground(null);
             cpuchoicescreen_button_gosecond.setBackground(Color.YELLOW);
-            break;  
+            break;
+            
     }
+
+    int pre_move=Integer.parseInt(action);
+    int move[]={0,0};
+    move[0]=pre_move/8;
+    move[1]=pre_move%8;
+    client.sendMoveToServer(null);
+    
 }
 
     public void setClient(Client userClient){
@@ -341,6 +357,9 @@ public void loginScreen(){
         gamescreen_button_buttonarray[i] = new JButton();
         gamescreen_button_buttonarray[i].setPreferredSize(new Dimension(60, 60));
         panel4_board_offset.add(gamescreen_button_buttonarray[i]); 
+        gamescreen_button_buttonarray[i].addActionListener(this);
+        gamescreen_button_buttonarray[i].setActionCommand(Integer.toString(i));// y=i/8, x=i%8
+        
     }
     panel4_board.add(panel4_board_offset);
 
@@ -402,16 +421,27 @@ public void loginScreen(){
 
   // dialogue pop up 
 
+  // to update player info
+  public void updatePlayerInfo(String playerName,String playerColor){
+    gamescreen_label_playername.setText(playerName);
+   // gamescreen_label_p
 
+  }
 
-// public static void main(String[] args){
+  // to update opp info
+  public void updateOpponentInfo(String oppName,String oppColor){
 
-// new UI("Othello");
-// System.out.println(System.getProperty("user.dir"));
+  }
 
+  // to update turn player
+  public void updateTurnLabel(String turnPlayer){
 
+  }
 
-//     }
+  // to disable/enable board
+  public void enableBoardInput(boolean state){
+
+  }
 
 }
 
