@@ -479,8 +479,4 @@ public void loginScreen(){
         }
     }
   }
-
-  // highlight vald moves
-  //public void highlightValidMoves()
-//}
-
+}
