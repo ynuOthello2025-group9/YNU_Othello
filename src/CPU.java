@@ -100,7 +100,7 @@ public class CPU {
                 }
                 res += CELL_SCORE[line][pattern];
             }
-            return "Black".equals(turn) ? res / 256 : -res / 256;
+            return res / 256;
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Error in evaluate: Array index out of bounds. " + e.getMessage());
             e.printStackTrace();
