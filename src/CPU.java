@@ -7,6 +7,7 @@ public class CPU {
 
     // 定数
     private static final int N_LINE = 8; // 行数
+    private static final int SCALE = 256;
     private static final int LINE_PATTERN = 6561; // 各行の可能なパターン数（3^8）
 
     // 各マスの評価値
@@ -100,7 +101,7 @@ public class CPU {
                 }
                 res += CELL_SCORE[line][pattern];
             }
-            return res / 256;
+            return res / SCALE;
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Error in evaluate: Array index out of bounds. " + e.getMessage());
             e.printStackTrace();
@@ -124,8 +125,8 @@ public class CPU {
         return !opponentHasMove; // 両者とも合法手がない場合に終了
     }
 
-    // negaalpha法による探索メソッド
-    private int negaalpha(Integer[][] board, int depth, int color, int alpha, int beta) {
+    // NegaAlpha法による探索メソッド
+    private int negaAlpha(Integer[][] board, int depth, int color, int alpha, int beta) {
         try {
             // String indent = "  ".repeat(this.depth - depth);
             // System.out.println(indent + "Entering depth: " + depth + ", Color: " + (color == 1 ? "Black" : "White")
@@ -162,7 +163,7 @@ public class CPU {
                 if(isGameOver(board)){
                     return color * evaluate(tempBoard); // ゲーム終了時の評価値を返す
                 }
-                int score = -negaalpha(tempBoard, depth, -color, -beta, -alpha);
+                int score = -negaAlpha(tempBoard, depth, -color, -beta, -alpha);
                 // System.out.println(indent + "Pass result, Score: " + score);
                 return score;
             }
@@ -175,7 +176,7 @@ public class CPU {
 
                 Othello.makeMove(tempBoard, move[0], move[1], turn);
                 // System.out.println(indent + "Trying move: [" + move[0] + ", " + move[1] + "]");
-                int score = -negaalpha(tempBoard, depth - 1, -color, -beta, -alpha);
+                int score = -negaAlpha(tempBoard, depth - 1, -color, -beta, -alpha);
                 // System.out.println(indent + "Move: [" + move[0] + ", " + move[1] + "], Score: " + score + ", Alpha: "
                         // + alpha + ", Beta: " + beta);
                 alpha = Math.max(alpha, score);
@@ -188,19 +189,19 @@ public class CPU {
             // System.out.println(indent + "Returning Alpha: " + alpha);
             return alpha;
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.err.println("Error in negaalpha: Array index out of bounds. " + e.getMessage());
+            System.err.println("Error in negaAlpha: Array index out of bounds. " + e.getMessage());
             e.printStackTrace();
             return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
         } catch (NullPointerException e) {
-            System.err.println("Error in negaalpha: Null pointer encountered. " + e.getMessage());
+            System.err.println("Error in negaAlpha: Null pointer encountered. " + e.getMessage());
             e.printStackTrace();
             return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
         } catch (IllegalArgumentException e) {
-            System.err.println("Error in negaalpha: Illegal argument provided. " + e.getMessage());
+            System.err.println("Error in negaAlpha: Illegal argument provided. " + e.getMessage());
             e.printStackTrace();
             return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
         } catch (Exception e) {
-            System.err.println("Unexpected error in negaalpha: " + e.getMessage());
+            System.err.println("Unexpected error in negaAlpha: " + e.getMessage());
             e.printStackTrace();
             return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
         }
@@ -234,8 +235,8 @@ public class CPU {
                     tempBoard[i] = board[i].clone();
                 }
                 Othello.makeMove(tempBoard, move[0], move[1], turn);
-                int score = -negaalpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
-                System.out.println("CPU: Evaluated move: [" + move[0] + ", " + move[1] + "], Score: " + score);
+                int score = -negaAlpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                // System.out.println("CPU: Evaluated move: [" + move[0] + ", " + move[1] + "], Score: " + score);
                 if (score > bestScore) {
                     bestScore = score;
                     bestMove = move;
@@ -250,44 +251,24 @@ public class CPU {
         }
     }
 
-    /*  デバッグ用mainメソッド
+    //  デバッグ用mainメソッド
     public static void main(String[] args) {
-        // 盤面の初期化
-        Integer[][] board = new Integer[8][8];
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                board[i][j] = 0;
+        //-----------------------------------------------
+        /*  evaluateInit()の検証
+        CPU cpu = new CPU("Black", "normal");
+        cpu.evaluateInit();
+    
+        int[] patterns = {0, 3281, 6560};
+        String[] patternNames = {"All Empty (00000000)", "(11111112)", "All White (22222222)"};
+    
+        for (int p = 0; p < patterns.length; p++) {
+            System.out.println("Pattern: " + patternNames[p]);
+            for (int line = 0; line < N_LINE; line++) {
+                System.out.println("Line " + line + ", Pattern " + patterns[p] + ": " + CELL_SCORE[line][patterns[p]]);
             }
-        }
-        // 白 (2) の配置
-        board[0][6] = 2;
-        board[1][2] = 2; board[1][3] = 2; board[1][4] = 2; board[1][5] = 2;
-        board[2][2] = 2; board[2][3] = 2; board[2][4] = 2;
-        board[3][2] = 2; board[3][4] = 2;
-        board[4][2] = 2; board[4][3] = 2; board[4][4] = 2;
-        board[5][2] = 2;
-        // 黒 (1) の配置
-        board[3][3] = 1;
-
-        // 合法手の収集
-        ArrayList<int[]> validMoves = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (Othello.isValidMove(board, i, j, "Black")) {
-                    validMoves.add(new int[] { i, j });
-                }
-            }
-        }
-
-        // 結果の出力
-        System.out.println("Valid moves for Black:");
-        if (validMoves.isEmpty()) {
-            System.out.println("No valid moves found.");
-        } else {
-            for (int[] move : validMoves) {
-                System.out.println("[" + move[0] + ", " + move[1] + "]");
-            }
-        }
-    }*/
+            System.out.println();
+        }*/
+        //------------------------------------------------
+    }
 }
 
