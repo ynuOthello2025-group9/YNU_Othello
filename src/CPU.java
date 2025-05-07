@@ -139,7 +139,7 @@ public class CPU {
             ArrayList<int[]> possibleMoves = new ArrayList<>();
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    if (Othello.isValidMove(board, i, j, turn)) {
+                    if (Othello.isValidMove(board, i, j, (color == 1 ? "Black" : "White"))) {
                         possibleMoves.add(new int[] { i, j });
                     }
                 }
@@ -147,6 +147,7 @@ public class CPU {
 
             if (possibleMoves.isEmpty()) {
                 System.out.println(indent + "No valid moves, passing.");
+                System.out.println(indent + (color == 1 ? "Black" : "White") + " has valid move?: " + Othello.hasValidMove(board, (color == 1 ? "Black" : "White")));
                 // 盤面を表示
                 for(int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
@@ -186,8 +187,20 @@ public class CPU {
 
             System.out.println(indent + "Returning Alpha: " + alpha);
             return alpha;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Error in negaalpha: Array index out of bounds. " + e.getMessage());
+            e.printStackTrace();
+            return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
+        } catch (NullPointerException e) {
+            System.err.println("Error in negaalpha: Null pointer encountered. " + e.getMessage());
+            e.printStackTrace();
+            return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error in negaalpha: Illegal argument provided. " + e.getMessage());
+            e.printStackTrace();
+            return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
         } catch (Exception e) {
-            System.err.println("Error in negaalpha: " + e.getMessage());
+            System.err.println("Unexpected error in negaalpha: " + e.getMessage());
             e.printStackTrace();
             return Integer.MIN_VALUE + 1; // エラー時は最小値を返す
         }
@@ -234,6 +247,46 @@ public class CPU {
             System.err.println("Error in decideMove: " + e.getMessage());
             e.printStackTrace();
             return new int[] { -1, -1 }; // エラー時はパスとして扱う
+        }
+    }
+
+    // main メソッド
+    public static void main(String[] args) {
+        // 盤面の初期化
+        Integer[][] board = new Integer[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = 0;
+            }
+        }
+        // 白 (2) の配置
+        board[0][6] = 2;
+        board[1][2] = 2; board[1][3] = 2; board[1][4] = 2; board[1][5] = 2;
+        board[2][2] = 2; board[2][3] = 2; board[2][4] = 2;
+        board[3][2] = 2; board[3][4] = 2;
+        board[4][2] = 2; board[4][3] = 2; board[4][4] = 2;
+        board[5][2] = 2;
+        // 黒 (1) の配置
+        board[3][3] = 1;
+
+        // 合法手の収集
+        ArrayList<int[]> validMoves = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (Othello.isValidMove(board, i, j, "Black")) {
+                    validMoves.add(new int[] { i, j });
+                }
+            }
+        }
+
+        // 結果の出力
+        System.out.println("Valid moves for Black:");
+        if (validMoves.isEmpty()) {
+            System.out.println("No valid moves found.");
+        } else {
+            for (int[] move : validMoves) {
+                System.out.println("[" + move[0] + ", " + move[1] + "]");
+            }
         }
     }
 }
