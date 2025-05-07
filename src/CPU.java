@@ -97,7 +97,7 @@ public class CPU {
                 for (int col = 0; col < 8; col++) {
                     int stone = board[line][col];
                     int value = (stone == 0) ? 0 : (stone == 1) ? 1 : 2;
-                    pattern += value * (int) Math.pow(3, col);
+                    pattern += value * (int) Math.pow(3, 7 - col);
                 }
                 res += CELL_SCORE[line][pattern];
             }
@@ -159,9 +159,6 @@ public class CPU {
                 Integer[][] tempBoard = new Integer[8][8];
                 for (int i = 0; i < 8; i++) {
                     tempBoard[i] = board[i].clone();
-                }
-                if(isGameOver(board)){
-                    return color * evaluate(tempBoard); // ゲーム終了時の評価値を返す
                 }
                 int score = -negaAlpha(tempBoard, depth, -color, -beta, -alpha);
                 // System.out.println(indent + "Pass result, Score: " + score);
