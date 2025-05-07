@@ -127,12 +127,12 @@ public class CPU {
     // negaalpha法による探索メソッド
     private int negaalpha(Integer[][] board, int depth, int color, int alpha, int beta) {
         try {
-            String indent = "  ".repeat(this.depth - depth);
-            System.out.println(indent + "Entering depth: " + depth + ", Color: " + (color == 1 ? "Black" : "White")
-                    + ", Alpha: " + alpha + ", Beta: " + beta);
+            // String indent = "  ".repeat(this.depth - depth);
+            // System.out.println(indent + "Entering depth: " + depth + ", Color: " + (color == 1 ? "Black" : "White")
+                    // + ", Alpha: " + alpha + ", Beta: " + beta);
             if (depth == 0 || isGameOver(board)) {
                 int eval = color * evaluate(board);
-                System.out.println(indent + "Leaf node, Evaluation: " + eval);
+                // System.out.println(indent + "Leaf node, Evaluation: " + eval);
                 return eval; // 葉ノードでは評価値を返す
             }
 
@@ -146,15 +146,15 @@ public class CPU {
             }
 
             if (possibleMoves.isEmpty()) {
-                System.out.println(indent + "No valid moves, passing.");
-                System.out.println(indent + (color == 1 ? "Black" : "White") + " has valid move?: " + Othello.hasValidMove(board, (color == 1 ? "Black" : "White")));
-                // 盤面を表示
+                // System.out.println(indent + "No valid moves, passing.");
+                // System.out.println(indent + (color == 1 ? "Black" : "White") + " has valid move?: " + Othello.hasValidMove(board, (color == 1 ? "Black" : "White")));
+                /*  盤面を表示
                 for(int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
                         System.out.print(board[i][j] + " ");
                     }
                     System.out.println();
-                }
+                }*/
                 Integer[][] tempBoard = new Integer[8][8];
                 for (int i = 0; i < 8; i++) {
                     tempBoard[i] = board[i].clone();
@@ -163,7 +163,7 @@ public class CPU {
                     return color * evaluate(tempBoard); // ゲーム終了時の評価値を返す
                 }
                 int score = -negaalpha(tempBoard, depth, -color, -beta, -alpha);
-                System.out.println(indent + "Pass result, Score: " + score);
+                // System.out.println(indent + "Pass result, Score: " + score);
                 return score;
             }
 
@@ -174,18 +174,18 @@ public class CPU {
                 }
 
                 Othello.makeMove(tempBoard, move[0], move[1], turn);
-                System.out.println(indent + "Trying move: [" + move[0] + ", " + move[1] + "]");
+                // System.out.println(indent + "Trying move: [" + move[0] + ", " + move[1] + "]");
                 int score = -negaalpha(tempBoard, depth - 1, -color, -beta, -alpha);
-                System.out.println(indent + "Move: [" + move[0] + ", " + move[1] + "], Score: " + score + ", Alpha: "
-                        + alpha + ", Beta: " + beta);
+                // System.out.println(indent + "Move: [" + move[0] + ", " + move[1] + "], Score: " + score + ", Alpha: "
+                        // + alpha + ", Beta: " + beta);
                 alpha = Math.max(alpha, score);
                 if (alpha >= beta) {
-                    System.out.println(indent + "Pruned at depth: " + depth + ", Alpha: " + alpha + ", Beta: " + beta);
+                    // System.out.println(indent + "Pruned at depth: " + depth + ", Alpha: " + alpha + ", Beta: " + beta);
                     break; // 枝狩り
                 }
             }
 
-            System.out.println(indent + "Returning Alpha: " + alpha);
+            // System.out.println(indent + "Returning Alpha: " + alpha);
             return alpha;
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Error in negaalpha: Array index out of bounds. " + e.getMessage());
@@ -250,7 +250,7 @@ public class CPU {
         }
     }
 
-    // main メソッド
+    /*  デバッグ用mainメソッド
     public static void main(String[] args) {
         // 盤面の初期化
         Integer[][] board = new Integer[8][8];
@@ -288,6 +288,6 @@ public class CPU {
                 System.out.println("[" + move[0] + ", " + move[1] + "]");
             }
         }
-    }
+    }*/
 }
 
