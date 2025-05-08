@@ -28,6 +28,8 @@ public class Client {
     private Player currentOpponentPlayer; // NEW: Holds the current opponent (CPU or Network)
     private String opponentName = "Opponent"; // UI Display name for the opponent (e.g., "CPU (Easy)" or "NetworkPlayer123")
     private boolean isNetworkMatch = false; // モードフラグ
+    private volatile boolean humanPlayedMoveLast = true; // 初期値は、ゲーム開始時は誰もパスしていないという想定
+    private volatile boolean opponentPlayedMoveLast = true;
 
     // --- CPU対戦用リソース ---
     private CPU cpuBrain; // Holds the AI logic for CPU
@@ -78,6 +80,8 @@ public class Client {
         updateBoardAndUI(boardState);
         // Reset currentOpponentPlayer for a new game
         this.currentOpponentPlayer = new Player();
+        this.humanPlayedMoveLast = true;
+        this.opponentPlayedMoveLast = true;
 
 
         if (isCpu) {
@@ -264,22 +268,20 @@ public class Client {
         }
 
         if (isNetworkMatch) {
-            if (humanPlayer.getStoneColor() == null) {
-                updateStatusAndUI(currentTurn, "まだあなたの色が決定されていません。", opponentName);
-                return;
-            }
+            if (humanPlayer.getStoneColor() == null) { /* ... */ return; }
             boolean myTurn = currentTurn != null && currentTurn.equals(humanPlayer.getStoneColor());
-            if (!myTurn) {
-                 System.out.println("Ignoring move: Not your turn (Network).");
-                 updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
-                 return;
-            }
-            if (!Othello.isValidMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()))) {
-                 System.out.println("Ignoring move: Invalid position (Network).");
-                 updateStatusAndUI(currentTurn, "そこには置けません。", opponentName);
-                 return;
-            }
+            if (!myTurn) { /* ... */ return; }
+            if (!Othello.isValidMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()))) { /* ... */ return; }
+    
+            Othello.makeMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()));
+            updateBoardAndUI(null);
             sendMoveToServer(row, col);
+    
+            this.humanPlayedMoveLast = true; // 自分が手を打った
+            this.opponentPlayedMoveLast = true; // 相手が直前にパスしたわけではない (自分が手を打ったので相手のパス状態はリセットされるべき)
+    
+            checkNetworkGameStatusAndProceed(); // 新しい状態確認メソッドを呼ぶ
+    
         } else { // CPU対戦
             if (!isPlayerTurnCPU || humanPlayer.getStoneColor() == null || !currentTurn.equals(humanPlayer.getStoneColor())) {
                  System.out.println("Ignoring move: Not your turn (CPU).");
@@ -447,27 +449,37 @@ public class Client {
         String[] parts = message.split(":", 2);
         String command = parts[0];
         String value = parts.length > 1 ? parts[1] : "";
-
+    
         SwingUtilities.invokeLater(() -> {
-            if (!isConnected && !command.equals("ERROR")) {
+            if (!isConnected && !command.equals("ERROR") && !command.equals("GAMEOVER")) { // Allow GAMEOVER even if locally disconnected
                  System.out.println("Ignoring server message, not connected: " + message);
                  return;
             }
             System.out.println("Processing command: " + command + ", Value: " + value);
-
+    
             switch (command) {
                 case "YOUR COLOR":
                     humanPlayer.setStoneColor(value);
-                    // Now that we know human's color, we can set opponent's color
-                    currentOpponentPlayer.setStoneColor(humanPlayer.getOpponentColor());
-                    gameActive = true;
-                    currentTurn = "黒"; // Standard Othello: Black moves first
-                    updateStatusAndUI(currentTurn, "あなたは " + humanPlayer.getStoneColor() + " です。" + getTurnMessage(), opponentName);
+                    if (humanPlayer.getStoneColor() != null) {
+                        currentOpponentPlayer.setStoneColor(humanPlayer.getOpponentColor());
+                        gameActive = true;
+                        currentTurn = "黒"; // 黒が先手
+                        this.humanPlayedMoveLast = true; // ゲーム開始時は誰もパスしていない
+                        this.opponentPlayedMoveLast = true;
+                        updateStatusAndUI(currentTurn, "あなたは " + humanPlayer.getStoneColor() + " です。" + getTurnMessage(), opponentName);
+
+                        // もし自分の最初のターンで行動不可能な場合 (例: 黒番で初手パスは通常ないが、特殊な盤面ならありうる)
+                        if (currentTurn.equals(humanPlayer.getStoneColor()) && !Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) {
+                            sendPassToServer(); // 自動的にパスを送信
+                        }
+                    } else {
+                        System.err.println("Error: YOUR COLOR message received null or invalid value: " + value);
+                        // Potentially request color again or show error
+                    }
                     break;
                 case "OPPONENT":
-                    this.opponentName = value; // Set UI display name
-                    this.currentOpponentPlayer.setPlayerName(value); // Set canonical name
-                    // If human's color is already known, set opponent's color
+                    this.opponentName = value;
+                    this.currentOpponentPlayer.setPlayerName(value);
                     if (humanPlayer.getStoneColor() != null) {
                         currentOpponentPlayer.setStoneColor(humanPlayer.getOpponentColor());
                     }
@@ -481,23 +493,30 @@ public class Client {
                         try {
                             int r = Integer.parseInt(moveCoords[0]);
                             int c = Integer.parseInt(moveCoords[1]);
-                            // The move is from the opponent, so use currentOpponentPlayer's color
+    
                             String opponentActualColor = currentOpponentPlayer.getStoneColor();
                             if (opponentActualColor == null || opponentActualColor.equals("?")) {
-                                // This might happen if OPPONENT message arrived but YOUR_COLOR hasn't,
-                                // or some other race condition. Try to infer from humanPlayer.
-                                opponentActualColor = humanPlayer.getOpponentColor();
-                                if (opponentActualColor.equals("?")) {
-                                     System.err.println("Cannot process opponent move: opponent color truly unknown.");
+                                if (humanPlayer.getStoneColor() != null) {
+                                    opponentActualColor = humanPlayer.getOpponentColor();
+                                    System.out.println("Inferred opponent color for MOVE: " + opponentActualColor);
+                                } else {
+                                     System.err.println("Cannot process opponent move: opponent color and human color unknown.");
+                                     // Perhaps request a full BOARD update from server or error out.
+                                     updateStatusAndUI(this.currentTurn, "色情報エラーのため相手の番を処理できません", opponentName);
                                      return;
                                 }
-                                 System.out.println("Inferred opponent color for MOVE: " + opponentActualColor);
                             }
-
+                            // ... (r, c, opponentActualColor の取得) ...
+                            this.currentTurn = opponentActualColor; // 相手が手を打ったので、一時的に相手のターンとして記録
                             Othello.makeMove(boardState, r, c, toOthelloColor(opponentActualColor));
-                            updateBoardAndUI(null); // boardState is updated
-                            this.currentTurn = opponentActualColor; // Reflect that opponent just made a move
-                            determineNextTurnAndUpdateStatusNetwork();
+                            updateBoardAndUI(null);
+                            updateStatusAndUI(this.currentTurn, opponentName + " ("+opponentActualColor+") が ("+ r + "," + c + ") に置きました。", opponentName);
+
+                            this.opponentPlayedMoveLast = true; // 相手が手を打った
+                            this.humanPlayedMoveLast = true; // 自分が直前にパスしたわけではない
+
+                            checkNetworkGameStatusAndProceed(); // 新しい状態確認メソッドを呼ぶ
+                            
                         } catch (NumberFormatException e) {
                             System.err.println("Invalid move format from server: " + value);
                         }
@@ -505,37 +524,53 @@ public class Client {
                          System.err.println("Invalid MOVE command format: " + message);
                     }
                     break;
-                case "BOARD": // Server sends full board state "00120..." and whose turn "Black" or "White"
+                case "BOARD":
                     String[] boardParts = value.split(":", 2);
                     if (boardParts.length == 2) {
                         parseBoardStateFromServer(boardParts[0]);
-                        this.currentTurn = fromOthelloColor(boardParts[1]);
-                        updateBoardAndUI(null); // boardState is updated
+                        this.currentTurn = fromOthelloColor(boardParts[1]); // Server dictates current turn
+                        gameActive = true; // Board state implies game is active
+                        updateBoardAndUI(null);
+                        // Ensure player colors are consistent if possible, though server is king for currentTurn
+                        if(humanPlayer.getStoneColor() == null && currentOpponentPlayer.getPlayerName() != null && !currentOpponentPlayer.getPlayerName().equals("?")) {
+                            System.out.println("BOARD received, attempting to infer colors if necessary.");
+                            // This part is tricky; YOUR COLOR should ideally arrive first.
+                            // If currentTurn is Black, and I am not Black, then I must be White (and vice-versa)
+                            // This assumes server assigns one player Black and one White before game starts properly.
+                        }
                         updateStatusAndUI(this.currentTurn, getTurnMessage(), opponentName);
+                        // If it's now my turn, and I can't move, I should auto-pass.
+                        if (gameActive && humanPlayer.getStoneColor() != null && this.currentTurn.equals(humanPlayer.getStoneColor())) {
+                            if (!Othello.hasValidMove(boardState, toOthelloColor(humanPlayer.getStoneColor()))) {
+                                System.out.println("Network: Auto-passing after BOARD update as it's my turn and I have no valid moves.");
+                                sendPassToServer();
+                            }
+                        }
+    
                     } else {
                         System.err.println("Invalid BOARD command format: " + message);
                     }
                     break;
-                case "PASSINFO": // E.g., "PASSINFO:黒" meaning black passed
+                case "PASS": // サーバーは "PASS" をそのまま転送するので、コマンドは "PASS" になる
                     if (!gameActive) return;
-                    String whoPassed = value; // This is "黒" or "白"
-                    this.currentTurn = whoPassed; // The player who just passed
+                    // "PASS" メッセージには誰がパスしたかの情報が含まれない。
+                    // このメッセージは相手クライアントが送信したものなので、
+                    // パスしたのは currentOpponentPlayer と判断できる。
+                    // (自分がパスした場合は、サーバーに "PASS" を送るが、それが自分に返ってくることはない想定。
+                    //  もし返ってくる仕様なら、送信元を判定する必要があるが、Server.java は相手にのみ転送する)
 
-                    String passerDisplayName;
-                    if (humanPlayer.getStoneColor() != null && humanPlayer.getStoneColor().equals(whoPassed)) {
-                        passerDisplayName = humanPlayer.getPlayerName();
-                    } else if (currentOpponentPlayer.getStoneColor() != null && currentOpponentPlayer.getStoneColor().equals(whoPassed)) {
-                        passerDisplayName = opponentName; // Use UI display name for opponent
-                    } else {
-                        passerDisplayName = whoPassed; // Fallback
-                    }
-                    updateStatusAndUI(this.currentTurn, passerDisplayName + " ("+whoPassed+") はパスしました。", opponentName);
-                    determineNextTurnAndUpdateStatusNetwork(); // Determine who is next
+                    System.out.println("Received PASS from opponent.");
+                    updateStatusAndUI(this.currentTurn, opponentName + " ("+currentOpponentPlayer.getStoneColor()+") はパスしました。", opponentName);
+
+                    this.opponentPlayedMoveLast = false; // 相手がパスした (手を打たなかった)
+                    // humanPlayedMoveLast は前回の自分の行動による
+
+                    checkNetworkGameStatusAndProceed(); // 状態確認と次の手番処理へ
                     break;
                 case "MESSAGE":
                     updateStatusAndUI(currentTurn, value, opponentName);
                     break;
-                case "GAMEOVER": // value is winner Othello color ("Black", "White", "Draw") or reason
+                case "GAMEOVER":
                     String[] gameOverParts = value.split(",", 2);
                     String winner = gameOverParts[0];
                     String reason = gameOverParts.length > 1 ? gameOverParts[1] : "Server";
@@ -543,16 +578,98 @@ public class Client {
                     break;
                 case "ERROR":
                     System.err.println("Server Error: " + value);
-                    updateStatusAndUI("エラー", "サーバーエラー: " + value, opponentName);
-                    JOptionPane.showMessageDialog(screenUpdater, "サーバーエラー:\n" + value, "エラー", JOptionPane.ERROR_MESSAGE);
-                    if (value.contains("Room full") || value.contains("Invalid name") || value.contains("Game already started")) {
-                        shutdownNetworkResources();
+                    final String finalValue = value; // For lambda
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(screenUpdater, "サーバーエラー:\n" + finalValue, "エラー", JOptionPane.ERROR_MESSAGE));
+                    // If error implies game cannot continue or setup failed, shut down network part.
+                    if (value.contains("Room full") || value.contains("Invalid name") || value.contains("Game already started") || value.contains("could not start")) {
+                        if(gameActive) processGameEnd("エラー", "ServerSetupError"); // End game if active
+                        else shutdownNetworkResources(); // Just shutdown if game wasn't active
                     }
                     break;
                 default:
-                    System.out.println("Unknown command from server: " + command);
+                    System.out.println("Unknown command from server: " + command + " with value: " + value);
             }
         });
+    }
+    
+    private void checkNetworkGameStatusAndProceed() {
+        if (!gameActive) return; // ゲームが終了していれば何もしない
+    
+        System.out.println("Checking network game status. Human played move last: " + humanPlayedMoveLast + ", Opponent played move last: " + opponentPlayedMoveLast);
+    
+        // 1. 盤面が埋まっているかチェック
+        if (8*8 == Othello.numberOfStone(boardState, BLACK) + Othello.numberOfStone(boardState, WHITE)) {
+            System.out.println("Board is full. Game Over.");
+            String winner = Othello.judgeWinner(boardState);
+            processGameEnd(winner, "BoardFull");
+            if (writer != null && isConnected) writer.println("GAMEOVER:" + winner + ",BoardFull");
+            return;
+        }
+    
+        // 2. 手番を次のプレイヤーに交代
+        // 直前の currentTurn は、手を打った人、またはパスを通知してきた相手を示している。
+        // そのため、ここでの currentTurn は「これから行動するべき人」を指すようにする。
+        if (currentTurn.equals(humanPlayer.getStoneColor())) { // 直前が自分のターンだった (自分が手を打った or 相手がパスした結果自分のターンになった)
+            currentTurn = currentOpponentPlayer.getStoneColor();
+        } else { // 直前が相手のターンだった (相手が手を打った or 自分がパスした結果相手のターンになった)
+            currentTurn = humanPlayer.getStoneColor();
+        }
+        updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
+        System.out.println("Turn switched to: " + currentTurn);
+    
+    
+        // 3. 新しい手番のプレイヤーが行動可能かチェック
+        boolean canCurrentPlayerMove = Othello.hasValidMove(boardState, toOthelloColor(currentTurn));
+    
+        if (canCurrentPlayerMove) {
+            // 行動可能。対応する "playedMoveLast" フラグを true にリセット (次の行動がムーブである可能性のため)
+            if (currentTurn.equals(humanPlayer.getStoneColor())) {
+                // humanPlayedMoveLast = true; // 次に自分が手を打てばこれが true になるので、ここではリセットしない
+                                           // むしろ、パスの連続性を断ち切るため、ムーブできるなら両者ともムーブの機会があったと見なす。
+                // humanPlayedMoveLast = true; // No, this is set when a move is *made*.
+                // opponentPlayedMoveLast = true; // If I can move, the pass sequence is broken.
+            } else {
+                // opponentPlayedMoveLast = true;
+            }
+            // 重要なのは、連続パスが途切れたら両方の PlayedMoveLast を true に戻すこと。
+            // ただし、それは実際にムーブが行われた後。ここでは何もしないか、
+            // 「もしこのプレイヤーがムーブしたら」という仮定でリセットする。
+            // より安全なのは、ムーブが確定した時にリセットすること。
+            // ここでは、次の行動を待つ。
+            System.out.println(currentTurn + " can move. Waiting for action.");
+    
+        } else { // 現手番プレイヤーはパスしなければならない
+            System.out.println(currentTurn + " must pass.");
+            if (currentTurn.equals(humanPlayer.getStoneColor())) { // 自分のターンでパス
+                if (!opponentPlayedMoveLast) { // 相手も直前に手を打たなかった (つまり相手もパスした)
+                    System.out.println("Game Over: Opponent also passed before me. Double pass.");
+                    String winner = Othello.judgeWinner(boardState);
+                    processGameEnd(winner, "Pass");
+                    if (writer != null && isConnected) writer.println("GAMEOVER:" + winner + ",Pass");
+                } else { // 相手は直前に手を打ったが、自分はパス
+                    sendPassToServer(); // これが humanPlayedMoveLast = false を設定する
+                }
+            } else { // 相手のターンでパス (相手クライアントがPASSを送ってくるはず)
+                if (!humanPlayedMoveLast) { // 自分も直前に手を打たなかった (つまり自分もパスした)
+                    System.out.println("Game Over: I also passed before opponent. Double pass.");
+                    // この状況は、自分がパス -> 相手のPASSINFO受信 -> ここに来る、で検出されるべき。
+                    // 相手のPASSINFO受信時に opponentPlayedMoveLast=false になる。
+                    // そしてこのメソッドが呼ばれ、currentTurn=human, canCurrentPlayerMove=false になった場合、
+                    // humanPlayedMoveLast が false であれば(自分が先にパスしていた)、ゲームオーバー。
+                    // 以下の処理は、相手がパスしなければならない、という「予測」。実際には相手のPASSINFOを待つ。
+                    // なので、この else ブロックは、「相手がパスすべき状況を検知したが、相手のPASSINFOを待つ」となる。
+                    System.out.println("Opponent must pass. Waiting for their PASSINFO from server.");
+                    // サーバーから相手のPASSINFOが来ると、opponentPlayedMoveLast = false になり、
+                    // 再度このメソッドが呼ばれ、currentTurn = humanPlayer.getStoneColor() となる。
+                    // その際、canCurrentPlayerMove が false で、かつ opponentPlayedMoveLast が false なら、
+                    // 上の if (currentTurn.equals(humanPlayer.getStoneColor())) の中の
+                    // if (!opponentPlayedMoveLast) でゲームオーバーが検出される。
+                } else {
+                    // 自分が手を打った後、相手がパスしなければならない状況。相手のPASSINFOを待つ。
+                     System.out.println("Opponent must pass after my move. Waiting for their PASSINFO.");
+                }
+            }
+        }
     }
 
     private void parseBoardStateFromServer(String boardStr) {
@@ -577,54 +694,79 @@ public class Client {
     }
 
     private void determineNextTurnAndUpdateStatusNetwork() {
-        if (!gameActive || !isNetworkMatch || humanPlayer.getStoneColor() == null) return;
-
-        String nextTurnCalculated = determineNextTurnLogicNetwork();
-
-        if (nextTurnCalculated == null) {
-            System.out.println("Client determined: Game Over (no valid moves). Waiting for server confirmation.");
+        if (!gameActive || !isNetworkMatch || humanPlayer.getStoneColor() == null || humanPlayer.getStoneColor().equals("?")) {
+            System.out.println("determineNextTurnAndUpdateStatusNetwork: Conditions not met to determine next turn (gameActive=" + gameActive + ", isNetworkMatch=" + isNetworkMatch + ", humanColor=" + humanPlayer.getStoneColor() + ")");
+            return;
+        }
+    
+        // The player whose turn it was (e.g., opponent who just moved, or self who just passed and server confirmed)
+        // is this.currentTurn. We need to see who is next.
+        String playerWhoseTurnItWas = this.currentTurn;
+        String nextPlayerToEvaluate;
+    
+        if (playerWhoseTurnItWas.equals(humanPlayer.getStoneColor())) {
+            nextPlayerToEvaluate = currentOpponentPlayer.getStoneColor();
         } else {
-            this.currentTurn = nextTurnCalculated;
+            nextPlayerToEvaluate = humanPlayer.getStoneColor();
+        }
+    
+        if (nextPlayerToEvaluate == null || nextPlayerToEvaluate.equals("?")) {
+            System.err.println("Cannot determine next turn: Next player's color is unknown. CurrentTurn: " + playerWhoseTurnItWas);
+            updateStatusAndUI(this.currentTurn, "相手の色不明瞭なためターン決定不可", opponentName);
+            return;
+        }
+    
+        this.currentTurn = nextPlayerToEvaluate; // Tentatively set turn to the next player
+        System.out.println("Network: Evaluating turn for " + this.currentTurn);
+    
+        boolean canThisPlayerMove = Othello.hasValidMove(boardState, toOthelloColor(this.currentTurn));
+    
+        if (canThisPlayerMove) {
+            // This player can move. Update UI. If it's human's turn, they play. If CPU/Network, they play.
             updateStatusAndUI(this.currentTurn, getTurnMessage(), opponentName);
-            System.out.println("Client determined next turn (Network): " + this.currentTurn);
-        }
-    }
-
-    private String determineNextTurnLogicNetwork() {
-        String myColor = humanPlayer.getStoneColor();
-        // Opponent's color should be reliably known if myColor is known.
-        String oppColor = (myColor != null) ? humanPlayer.getOpponentColor() : null;
-
-
-        if (myColor == null || oppColor == null || oppColor.equals("?") || this.currentTurn == null) {
-            System.err.println("Cannot determine next turn (Network): colors or currentTurn not properly initialized. MyColor: " + myColor + ", OppColor: " + oppColor + ", CurrentTurn: " + this.currentTurn);
-            return this.currentTurn; // Fallback
-        }
-
-        String playerWhoseTurnItWas = this.currentTurn; // The player who just acted or was supposed to act
-        String playerToCheckNext;
-        String playerAfterThat;
-
-        if (playerWhoseTurnItWas.equals(myColor)) {
-            playerToCheckNext = oppColor;
-            playerAfterThat = myColor;
-        } else { // Opponent's turn it was
-            playerToCheckNext = myColor;
-            playerAfterThat = oppColor;
-        }
-
-        boolean canPlayerToCheckNextMove = Othello.hasValidMove(boardState, toOthelloColor(playerToCheckNext));
-
-        if (canPlayerToCheckNextMove) {
-            return playerToCheckNext;
+            System.out.println("Network: Next turn is " + this.currentTurn + ". They can move.");
         } else {
-            System.out.println("Client logic: " + playerToCheckNext + " would pass.");
-            boolean canPlayerAfterThatMove = Othello.hasValidMove(boardState, toOthelloColor(playerAfterThat));
-            if (canPlayerAfterThatMove) {
-                return playerAfterThat;
+            // This player cannot move, so they must pass.
+            System.out.println("Network: " + this.currentTurn + " cannot move and must pass.");
+            updateStatusAndUI(this.currentTurn, this.currentTurn + " はパスします。", opponentName); // Announce this player passes
+    
+            // If it's the human player's turn and they must pass, send PASS to server.
+            if (this.currentTurn.equals(humanPlayer.getStoneColor())) {
+                sendPassToServer(); // This will send "PASS" if conditions are met (it's my turn, no moves)
+            }
+            // If it was the opponent who was determined to pass here, we wait for their PASSINFO or GAMEOVER.
+            // The server should manage relaying that opponent's pass. Our client doesn't send PASS for the opponent.
+    
+            // After this auto-pass announcement (if it wasn't the human player's actual pass sent to server),
+            // we need to see who is next *after* this determined pass.
+            // Let's switch to the *other* player again.
+            String playerAfterPass = this.currentTurn.equals(humanPlayer.getStoneColor()) ?
+                                     currentOpponentPlayer.getStoneColor() : humanPlayer.getStoneColor();
+    
+            if (playerAfterPass == null || playerAfterPass.equals("?")) {
+                System.err.println("Cannot determine turn after a deduced pass: Other player's color is unknown.");
+                updateStatusAndUI(this.currentTurn, "色不明瞭なため連続パス処理不可", opponentName);
+                return;
+            }
+            
+            this.currentTurn = playerAfterPass; // Now check this player
+            System.out.println("Network: After deduced pass by previous player, evaluating turn for " + this.currentTurn);
+            boolean canPlayerAfterPassMove = Othello.hasValidMove(boardState, toOthelloColor(this.currentTurn));
+    
+            if (canPlayerAfterPassMove) {
+                // The player after the deduced pass CAN move.
+                updateStatusAndUI(this.currentTurn, getTurnMessage(), opponentName);
+                System.out.println("Network: Next turn is " + this.currentTurn + ". They can move (after one pass).");
             } else {
-                System.out.println("Client logic: " + playerAfterThat + " would also pass. Game Over.");
-                return null;
+                // Neither player can move (original next player passed, and player after that also passes). Game Over.
+                System.out.println("Network: " + this.currentTurn + " also cannot move. Both players pass. Game Over.");
+                String winner = Othello.judgeWinner(boardState);
+                processGameEnd(winner, "Pass"); // Process locally
+    
+                if (writer != null && isConnected) {
+                    writer.println("DECLARE_GAMEOVER:" + winner + ",Pass");
+                    System.out.println("Sent: DECLARE_GAMEOVER:" + winner + ",Pass");
+                }
             }
         }
     }
@@ -641,12 +783,24 @@ public class Client {
 
     public void sendPassToServer() {
         if (writer != null && isConnected && gameActive) {
-             if (humanPlayer.getStoneColor() != null && currentTurn.equals(humanPlayer.getStoneColor()) &&
+             if (humanPlayer.getStoneColor() != null && currentTurn != null &&
+                 currentTurn.equals(humanPlayer.getStoneColor()) &&
                  !Othello.hasValidMove(boardState, toOthelloColor(humanPlayer.getStoneColor()))) {
-                String message = "PASS";
-                writer.println(message);
-                System.out.println("Sent: " + message);
-                updateStatusAndUI(currentTurn, "パスしました。サーバー応答待ち...", opponentName);
+    
+                writer.println("PASS");
+                System.out.println("Sent: PASS");
+                this.humanPlayedMoveLast = false; // 自分がパスした (手を打たなかった)
+                // opponentPlayedMoveLast は変更しない (相手の最後の行動に依存)
+    
+                updateStatusAndUI(currentTurn, "あなたがパスしました。相手の応答待ち...", opponentName);
+    
+                // 表示上、手番を相手に移す。実際のゲーム進行は相手の応答次第。
+                if (currentOpponentPlayer.getStoneColor() != null) {
+                    this.currentTurn = currentOpponentPlayer.getStoneColor();
+                    updateStatusAndUI(this.currentTurn, getTurnMessage(), opponentName); // UIを相手のターン表示に更新
+                }
+                // この後、サーバーから自分のPASSINFOがリレーされてくるか、相手がMOVE/PASSしてくるのを待つ。
+                // checkNetworkGameStatusAndProceed はここでは呼ばない。
              } else {
                  updateStatusAndUI(currentTurn, "パスできません。", opponentName);
                  System.out.println("Pass attempt denied: not your turn or valid moves exist.");
