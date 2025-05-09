@@ -6,6 +6,7 @@ import CPU.NNPolicyStrategy; // NNPolicyStrategy.java が同じパッケージ�
 import CPU.NegaAlphaStrategy;
 import CPU.WeightedBoardEvaluator;
 import CPU.OthelloAIStrategy;
+import CPU.OthelloActorCriticNet;
 import CPU.OthelloNN;
 import CPU.OthelloUtils; // OthelloUtils.java が同じパッケージにある場合など
 import CPU.WeightLoaderStandard; // WeightLoaderStandard.java が同じパッケージにある場合など
@@ -52,25 +53,27 @@ public class CPUSwitcher {
                 break;
 
             case "NN":
-                // NNPolicyStrategy を初期化し、NNモデルをロード
-                System.out.println("CPU: Initializing NN strategy and loading model...");
+                // NNPolicyStrategy を初期化し、Actor-Critic モデルをロード ★ここを変更★
+                System.out.println("CPU: Initializing NN strategy and loading Actor-Critic model...");
                 try {
                     // モデルファイルパスを指定 (適切なパスに修正してください)
-                    String weightsFile = "CPU/othello_actor_critic_weights_custom_ReinforestLearning.txt";
-                    OthelloNN loadedNN = WeightLoaderStandard.loadModel(weightsFile);
-                    this.currentStrategy = new NNPolicyStrategy(loadedNN);
-                    System.out.println("CPU: NN model loaded successfully.");
+                    String weightsFile = "CPU/othello_actor_critic_weights_custom.txt"; // Actor-Critic の重みファイル名
+                    // ★OthelloActorCriticNet の loadModel を呼び出す★
+                    OthelloActorCriticNet loadedAcNet = OthelloActorCriticNet.loadModel(weightsFile);
+                    // ★NNPolicyStrategy のコンストラクタに OthelloActorCriticNet インスタンスを渡す★
+                    this.currentStrategy = new NNPolicyStrategy(loadedAcNet);
+                    System.out.println("CPU: Actor-Critic model loaded successfully for NN strategy.");
                 } catch (IOException e) {
-                    System.err.println("CPU: Error loading NN model: " + e.getMessage());
+                    System.err.println("CPU: Error loading Actor-Critic model: " + e.getMessage());
                     e.printStackTrace();
-                    // NNモデルのロードに失敗した場合のフォールバック
-                    System.err.println("CPU: Falling back to SimpleStrategy due to NN model loading error.");
-                    this.currentStrategy = new SimpleStrategy(); // フォールバック戦略
+                    // モデルのロードに失敗した場合のフォールバック
+                    System.err.println("CPU: Falling back to SimpleStrategy due to model loading error.");
+                    this.currentStrategy = new SimpleStrategy(); // フォールバック戦略 (別途実装)
                 } catch (Exception e) {
                      System.err.println("CPU: Unexpected error during NN strategy initialization: " + e.getMessage());
                     e.printStackTrace();
                     System.err.println("CPU: Falling back to SimpleStrategy.");
-                     this.currentStrategy = new SimpleStrategy(); // 予期せぬエラーでもフォールバック
+                     this.currentStrategy = new SimpleStrategy();
                 }
                 break;
 
