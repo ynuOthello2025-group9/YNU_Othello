@@ -1,4 +1,6 @@
+package CPU;
 // WeightedBoardEvaluator.java
+
 public class WeightedBoardEvaluator implements StaticEvaluator {
 
     // CPUクラスから移動した定数

@@ -1,17 +1,20 @@
-package CPU;
 // CPU.java
 import java.util.ArrayList;
-// import CPU.NNPolicyStrategy; // NNPolicyStrategy.java が同じパッケージにある場合など
-// import CPU.NegaAlphaStrategy;
-// import CPU.WeightedBoardEvaluator;
-// import CPU.OthelloAIStrategy;
-// import CPU.OthelloUtils; // OthelloUtils.java が同じパッケージにある場合など
-// import CPU.WeightLoaderStandard; // WeightLoaderStandard.java が同じパッケージにある場合など
-// import CPU.SimpleStrategy; // フォールバック用
+import java.util.Arrays;
+
+import CPU.NNPolicyStrategy; // NNPolicyStrategy.java が同じパッケージにある場合など
+import CPU.NegaAlphaStrategy;
+import CPU.WeightedBoardEvaluator;
+import CPU.OthelloAIStrategy;
+import CPU.OthelloNN;
+import CPU.OthelloUtils; // OthelloUtils.java が同じパッケージにある場合など
+import CPU.WeightLoaderStandard; // WeightLoaderStandard.java が同じパッケージにある場合など
+import CPU.SimpleStrategy; // フォールバック用
+import CPU.StaticEvaluator;
 
 import java.io.IOException; // NNモデル読み込み時の例外
 
-public class CPU2 {
+public class CPUSwitcher {
     private String turn; // 先手後手
     private String level; // 強さ（3段階）
     private int depth; // 探索の深さ (NegaAlphaStrategy で使用)
@@ -26,7 +29,7 @@ public class CPU2 {
     private OthelloAIStrategy currentStrategy;
 
     // コンストラクタ
-    public CPU2(String turn, String level) {
+    public CPUSwitcher(String turn, String level) {
         this.turn = turn;
         this.level = level;
         depthInit(); // negaAlpha 用の深さを設定
@@ -57,7 +60,7 @@ public class CPU2 {
                     OthelloNN loadedNN = WeightLoaderStandard.loadModel(weightsFile);
                     this.currentStrategy = new NNPolicyStrategy(loadedNN);
                     System.out.println("CPU: NN model loaded successfully.");
-                } catch (IOException | NumberFormatException | IllegalArgumentException e) {
+                } catch (IOException e) {
                     System.err.println("CPU: Error loading NN model: " + e.getMessage());
                     e.printStackTrace();
                     // NNモデルのロードに失敗した場合のフォールバック
@@ -188,7 +191,7 @@ public class CPU2 {
 
          // CPU インスタンスの生成 (NN 戦略を試す場合)
          // AI_STRATEGY を "NN" に変更してからコンパイル・実行してください
-         CPU2 cpuNN = new CPU2("Black", "普通"); // レベルは negaAlpha の depth にのみ影響
+         CPUSwitcher cpuSwitcher = new CPUSwitcher("Black", "普通"); // レベルは negaAlpha の depth にのみ影響
 
          // CPU インスタンスの生成 (NegaAlpha 戦略を試す場合)
          // AI_STRATEGY を "negamax" に変更してからコンパイル・実行してください
@@ -197,10 +200,15 @@ public class CPU2 {
 
          // ダミーの盤面を作成して decideMove を呼び出すテスト
          Integer[][] dummyBoard = new Integer[8][8];
+         for(int i=0; i<8; i++){
+            for(int j=0; j<8; j++){
+                dummyBoard[i][j]=0;
+            }
+         }
          // ここに盤面状態を設定... (例: 序盤の盤面)
          dummyBoard[3][3] = 1; // Black
-         dummyBoard[3][4] = -1; // White
-         dummyBoard[4][3] = -1; // White
+         dummyBoard[3][4] = 2; // White
+         dummyBoard[4][3] = 2; // White
          dummyBoard[4][4] = 1; // Black
 
          // 合法手がないダミー盤面の例 (パスのテスト)
@@ -208,13 +216,13 @@ public class CPU2 {
          // すべてのマスを石で埋めるなどして合法手をなくす
 
          System.out.println("\nCalling decideMove on dummy board...");
-         int[] move = cpuNN.getCPUOperation(dummyBoard); // NN Strategy の decideMove が呼ばれる
+         int[] move = cpuSwitcher.getCPUOperation(dummyBoard); // NN Strategy の decideMove が呼ばれる
          // int[] move = cpuNega.getCPUOperation(dummyBoard); // NegaAlpha Strategy の decideMove が呼ばれる
 
 
          if (move != null) {
              System.out.println("Returned move from getCPUOperation: [" + move[0] + ", " + move[1] + "]");
-             // OthelloUtils.makeMove(dummyBoard, move[0], move[1], cpuNN.turn); // 盤面を更新
+             // OthelloUtils.makeMove(dummyBoard, move[0], move[1], CPUSwitcher.turn); // 盤面を更新
          } else {
              System.out.println("Returned move is null (pass).");
          }
