@@ -32,7 +32,8 @@ public class Client {
     private volatile boolean opponentPlayedMoveLast = true;
 
     // --- CPU対戦用リソース ---
-    private CPU cpuBrain; // Holds the AI logic for CPU
+    // private CPU cpuBrain; // Holds the AI logic for 
+    private CPUSwitcher cpuBrain = new CPUSwitcher("Black", "普通"); // レベルは negaAlpha の depth にのみ影響
     // private Player cpuOpponent; // DEPRECATED: Replaced by currentOpponentPlayer
     private volatile boolean isPlayerTurnCPU = false; // CPU対戦でのプレイヤーのターンか
     private ExecutorService cpuExecutor; // null許容、必要時に生成
@@ -103,7 +104,7 @@ public class Client {
                 cpuExecutor = Executors.newSingleThreadExecutor();
             }
             // Pass the CPU's actual stone color (Black/White) to the CPU brain
-            cpuBrain = new CPU(toOthelloColor(this.currentOpponentPlayer.getStoneColor()), cpuStrength);
+            cpuBrain = new CPUSwitcher(toOthelloColor(this.currentOpponentPlayer.getStoneColor()), cpuStrength);
             gameActive = true;
             currentTurn = "黒"; // 黒が先手
 

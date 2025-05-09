@@ -16,7 +16,7 @@ public class NNPolicyStrategy implements OthelloAIStrategy {
     @Override
     public int[] decideMove(Integer[][] board, String turn) {
         // 1. 有効な着手を探す (共通ヘルパーを使用)
-        ArrayList<int[]> possibleMoves = findValidMoves(board, turn);
+        ArrayList<int[]> possibleMoves = OthelloUtils.findValidMoves(board, turn);
 
         // 置ける場所がない場合
         if (possibleMoves.isEmpty()) {

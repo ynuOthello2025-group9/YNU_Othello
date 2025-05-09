@@ -23,7 +23,7 @@ public class CPUSwitcher {
     // "negamax" または "NN" を設定
     // NN Strategy を使用する場合は、WeightLoaderStandard がロードするファイルが
     // 存在し、形式が正しい必要があります。
-    private static final String AI_STRATEGY = "negamax"; // ←ここで戦略を切り替える
+    private static final String AI_STRATEGY = "NN"; // ←ここで戦略を切り替える
 
     // 選択されたAI戦略インスタンス
     private OthelloAIStrategy currentStrategy;
@@ -56,7 +56,7 @@ public class CPUSwitcher {
                 System.out.println("CPU: Initializing NN strategy and loading model...");
                 try {
                     // モデルファイルパスを指定 (適切なパスに修正してください)
-                    String weightsFile = "othello_weights_custom.txt";
+                    String weightsFile = "CPU/othello_actor_critic_weights_custom_ReinforestLearning.txt";
                     OthelloNN loadedNN = WeightLoaderStandard.loadModel(weightsFile);
                     this.currentStrategy = new NNPolicyStrategy(loadedNN);
                     System.out.println("CPU: NN model loaded successfully.");
