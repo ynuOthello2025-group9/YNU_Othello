@@ -18,7 +18,7 @@ public class Client {
     private static final long HEARTBEAT_INTERVAL_SECONDS = 10;
 
     // --- UI ---
-    private ScreenUpdater screenUpdater;
+    private View View;
 
     // --- ゲーム状態 ---
     private Integer[][] boardState;
@@ -49,8 +49,8 @@ public class Client {
 
 
     /** コンストラクタ */
-    public Client(ScreenUpdater screenUpdater) {
-        this.screenUpdater = screenUpdater;
+    public Client(View View) {
+        this.View = View;
         this.boardState = new Integer[SIZE][SIZE];
         Othello.initBoard(boardState); // 初期盤面
         this.humanPlayer = new Player();
@@ -97,7 +97,7 @@ public class Client {
 
             System.out.println("Starting CPU Match: " + humanPlayer.getPlayerName() + "(" + humanPlayer.getStoneColor() + ") vs " +
                                this.opponentName); // Display opponentName which includes strength
-            screenUpdater.showGameScreen();
+            View.showGameScreen();
 
             if (cpuExecutor == null || cpuExecutor.isShutdown()) {
                 cpuExecutor = Executors.newSingleThreadExecutor();
@@ -131,7 +131,7 @@ public class Client {
             this.opponentName = "?"; // UI display name, will be updated by server
 
             System.out.println("Starting Network Match: Player(" + humanPlayer.getPlayerName() + ") connecting to " + serverAddress + ":" + serverPort);
-            screenUpdater.showGameScreen();
+            View.showGameScreen();
             updateStatusAndUI(null, "サーバーに接続中...", null);
             new Thread(this::connectToServer).start();
         }
@@ -144,13 +144,13 @@ public class Client {
              }
          }
          final Integer[][] boardCopy = copyBoard(this.boardState);
-         SwingUtilities.invokeLater(() -> screenUpdater.updateBoard(boardCopy));
+         SwingUtilities.invokeLater(() -> View.updateBoard(boardCopy));
     }
 
     private void updateStatusAndUI(String turn, String message, String opponentDisplayName) {
         // opponentDisplayName is the name to show in UI (e.g. "CPU (Easy)" or "NetworkPlayer123")
         final String displayOpponent = (opponentDisplayName != null) ? opponentDisplayName : this.opponentName;
-        SwingUtilities.invokeLater(() -> screenUpdater.updateStatus(turn, message, displayOpponent));
+        SwingUtilities.invokeLater(() -> View.updateStatus(turn, message, displayOpponent));
     }
 
     private String getTurnMessage() {
@@ -420,7 +420,7 @@ public class Client {
              final String errorMsg = "接続できませんでした: " + e.getMessage();
              System.err.println("サーバー接続失敗: " + e);
              updateStatusAndUI("接続失敗", errorMsg, null);
-             SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(screenUpdater, errorMsg, "接続エラー", JOptionPane.ERROR_MESSAGE));
+             SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(View, errorMsg, "接続エラー", JOptionPane.ERROR_MESSAGE));
              shutdownNetworkResources();
          }
     }
@@ -579,7 +579,7 @@ public class Client {
                 case "ERROR":
                     System.err.println("Server Error: " + value);
                     final String finalValue = value; // For lambda
-                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(screenUpdater, "サーバーエラー:\n" + finalValue, "エラー", JOptionPane.ERROR_MESSAGE));
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(View, "サーバーエラー:\n" + finalValue, "エラー", JOptionPane.ERROR_MESSAGE));
                     // If error implies game cannot continue or setup failed, shut down network part.
                     if (value.contains("Room full") || value.contains("Invalid name") || value.contains("Game already started") || value.contains("could not start")) {
                         if(gameActive) processGameEnd("エラー", "ServerSetupError"); // End game if active
@@ -853,11 +853,11 @@ public class Client {
         SwingUtilities.invokeLater(() -> {
             Client gameClient = null;
             try {
-                ScreenUpdater screenUpdater = new ScreenUpdater();
-                gameClient = new Client(screenUpdater);
-                screenUpdater.setClient(gameClient);
+                View View = new View();
+                gameClient = new Client(View);
+                View.setClient(gameClient);
                 final Client finalGameClient = gameClient;
-                screenUpdater.addWindowListener(new java.awt.event.WindowAdapter() {
+                View.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                         System.out.println("Window closing event received.");
@@ -867,7 +867,7 @@ public class Client {
                         System.exit(0);
                     }
                 });
-                screenUpdater.setVisible(true);
+                View.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 if (gameClient != null) {
