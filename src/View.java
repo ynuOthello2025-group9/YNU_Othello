@@ -57,12 +57,12 @@ public class View extends JFrame implements ActionListener {
     private JLabel gamescreen_label_oppname;
     private JLabel gamescreen_label_opppiece;
     private JLabel gamescreen_label_opppiececount;
-    private JLabel gamescreen_label_turnplayer;
+    private JLabel gamescreen_label_turnplayer; // ★このラベルの表示内容を修正
     private JButton gamescreen_button_surrender;
 
 
     // --- 状態 ---
-    private Integer[][] boardState; // 盤面データ 
+    private Integer[][] boardState; // 盤面データ
 
 
     /**
@@ -489,7 +489,7 @@ public class View extends JFrame implements ActionListener {
     }
 
     /**
-     * 盤面更新 
+     * 盤面更新
      * BoardPanelに描画を任せる
      */
     public void updateBoard(Integer[][] board) {
@@ -501,18 +501,32 @@ public class View extends JFrame implements ActionListener {
 
     /**
      * ステータス表示更新
-     * @param playerTurn 現在の手番 ("黒" or "白")
-     * @param statusText 現在のゲーム状態を示すテキスト
+     * @param playerTurn 現在の手番 ("黒" or "白", または手番表示が不要な場合はnull)
+     * @param statusText 現在のゲーム状態を示すテキスト (これが主要な表示内容)
      * @param opponentInfo 対戦相手の情報 (ネットワーク対戦時)
      */
     public void updateStatus(String playerTurn, String statusText, String opponentInfo) {
         SwingUtilities.invokeLater(() -> {
-            // 手番ラベルの更新
             if (gamescreen_label_turnplayer != null) {
-                 gamescreen_label_turnplayer.setText(playerTurn != null ? playerTurn + "の番" : "ゲーム待機中...");
+                String displayMessage;
+                if (statusText != null && !statusText.isEmpty()) {
+                    // statusText が提供されていれば、それを表示する
+                    displayMessage = statusText;
+                } else if (playerTurn != null && (playerTurn.equals("黒") || playerTurn.equals("白"))) {
+                    // statusText がなく、playerTurn が有効な手番の色であれば、「<色>の番です。」と表示
+                    displayMessage = playerTurn + "の番です。";
+                } else if (playerTurn != null) {
+                    // statusText がなく、playerTurn が手番の色以外 (例: "ゲーム終了", "接続中") であれば、それをそのまま表示
+                    displayMessage = playerTurn;
+                }
+                else {
+                    // 何も情報がない場合 (例: ゲーム開始直後でまだ手番もメッセージもない場合)
+                    displayMessage = "ゲーム待機中..."; // デフォルトメッセージ
+                }
+                gamescreen_label_turnplayer.setText(displayMessage);
             }
 
-            // ウィンドウタイトルに対戦相手情報を表示 
+            // ウィンドウタイトルに対戦相手情報を表示
             if (opponentInfo != null && !opponentInfo.isEmpty() && !opponentInfo.equals("?")) {
                  setTitle("オセロゲーム - vs " + opponentInfo);
             } else {
@@ -607,7 +621,7 @@ public class View extends JFrame implements ActionListener {
 
 
     /**
-     * BoardPanel 
+     * BoardPanel
      * 盤面の描画とクリック座標の計算を行う
      */
     class BoardPanel extends JPanel {
@@ -683,7 +697,7 @@ public class View extends JFrame implements ActionListener {
         }
 
 
-        // クリック座標から盤面上のマス目を計算 
+        // クリック座標から盤面上のマス目を計算
         public Point getBoardCoordinates(Point clickPoint) {
             int panelWidth = getWidth();
             int panelHeight = getHeight();
