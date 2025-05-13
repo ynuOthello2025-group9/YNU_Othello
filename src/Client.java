@@ -877,12 +877,14 @@ public class Client {
                 serverAddress = args[0];
                 try {
                     serverPort = Integer.parseInt(args[1]);
-                    if (serverPort <= 0 || serverPort > 65535) {
-                        System.err.println("警告: 無効なポート番号が指定されました。デフォルト値を使用します: " + args[1]);
+                    if (serverPort < 1024 || serverPort > 49151) {
+                        System.err.println("警告: 無効なポート番号が指定されました。デフォルト値を使用します: "+ args[0] + args[1]);
+                        serverAddress = "localhost";
                         serverPort = 10000;
                     }
                 } catch (NumberFormatException e) {
-                    System.err.println("警告: ポート番号が数値ではありません。デフォルト値を使用します: " + args[1]);
+                    System.err.println("警告: ポート番号が数値ではありません。デフォルト値を使用します: "+ args[0] + args[1]);
+                    serverAddress = "localhost";
                     serverPort = 10000;
                 }
             }

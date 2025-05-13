@@ -159,6 +159,10 @@ public class Server {
         int serverPort = 10000; //デフォルトの待ち受けポート10000番
         if (args.length > 0) {
             serverPort = Integer.parseInt(args[0]);
+            if (serverPort < 1024 || serverPort > 49151) {
+                System.err.println("警告: 無効なポート番号が指定されました。デフォルト値を使用します: "+ args[0] + args[1]);
+                serverPort = 10000;
+            }
         }
 		Server server = new Server(serverPort); //サーバオブジェクトを準備
 		server.acceptClient(); //クライアント受け入れを開始
