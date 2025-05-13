@@ -307,7 +307,6 @@ public class Client {
             if (Othello.isValidMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()))) {
                 Othello.makeMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()));
                 updateBoardAndUI(boardState);
-                //TODO
                 if(humanPlayer.getStoneColor().equals("黒")){
                     View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK));
                 }else{

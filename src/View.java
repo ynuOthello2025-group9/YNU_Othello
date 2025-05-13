@@ -321,7 +321,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_playerpiece = new JLabel("黒");
         gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_playerpiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_playerpiececount = new JLabel(("枚数: 0"));
+        gamescreen_label_playerpiececount = new JLabel(("0枚"));
         gamescreen_label_playerpiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_playerpiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -346,7 +346,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_opppiece = new JLabel("黒");
         gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_opppiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_opppiececount = new JLabel(("枚数: 0"));
+        gamescreen_label_opppiececount = new JLabel(("0枚"));
         gamescreen_label_opppiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_opppiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
