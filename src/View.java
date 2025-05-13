@@ -112,7 +112,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     }
 
     /** メインメニュー画面セットアップ (UI.javaのmainScreenを元に) */
-    private void setupMainMenu() {
+    public void setupMainMenu() {
         mainMenuPanel = new JPanel();
         mainMenuPanel.setLayout(new BoxLayout(mainMenuPanel, BoxLayout.Y_AXIS));
         mainMenuPanel.setBorder(BorderFactory.createEmptyBorder(80, 100, 50, 100));
