@@ -95,6 +95,10 @@ public class Client {
             String cpuStrength = cpuStrengthOrServerAddr;
             this.opponentName = this.currentOpponentPlayer.getPlayerName() + " (" + cpuStrength + ")"; // UI display name
 
+            View.updatePlayerInfo(humanPlayer.getPlayerName(), humanPlayer.getStoneColor());
+            View.updateOpponentInfo(this.opponentName, currentOpponentPlayer.getStoneColor());
+
+
             System.out.println("Starting CPU Match: " + humanPlayer.getPlayerName() + "(" + humanPlayer.getStoneColor() + ") vs " +
                                this.opponentName); // Display opponentName which includes strength
             View.showGameScreen();
@@ -129,6 +133,9 @@ public class Client {
             this.serverAddress = cpuStrengthOrServerAddr;
             this.serverPort = port;
             this.opponentName = "?"; // UI display name, will be updated by server
+
+            View.updatePlayerInfo(humanPlayer.getPlayerName(), "?"); // Color is unknown initially
+
 
             System.out.println("Starting Network Match: Player(" + humanPlayer.getPlayerName() + ") connecting to " + serverAddress + ":" + serverPort);
             View.showGameScreen();
@@ -466,6 +473,11 @@ public class Client {
                         currentTurn = "黒"; // 黒が先手
                         this.humanPlayedMoveLast = true; // ゲーム開始時は誰もパスしていない
                         this.opponentPlayedMoveLast = true;
+
+                        View.updatePlayerInfo(humanPlayer.getPlayerName(), humanPlayer.getStoneColor());
+                        View.updateOpponentInfo(this.opponentName, currentOpponentPlayer.getStoneColor());
+
+
                         updateStatusAndUI(currentTurn, "あなたは " + humanPlayer.getStoneColor() + " です。" + getTurnMessage(), opponentName);
 
                         // もし自分の最初のターンで行動不可能な場合 (例: 黒番で初手パスは通常ないが、特殊な盤面ならありうる)
@@ -482,6 +494,11 @@ public class Client {
                     this.currentOpponentPlayer.setPlayerName(value);
                     if (humanPlayer.getStoneColor() != null) {
                         currentOpponentPlayer.setStoneColor(humanPlayer.getOpponentColor());
+                        // Opponent color was inferred from human color, update view with inferred color
+                        View.updateOpponentInfo(this.opponentName, currentOpponentPlayer.getStoneColor());
+                    } else {
+                        // Opponent color is still unknown, update with name only
+                        View.updateOpponentInfo(this.opponentName, "?");
                     }
                     System.out.println("Opponent set to: " + opponentName + " (Player Object: " + currentOpponentPlayer.getPlayerName() + ")");
                     updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
