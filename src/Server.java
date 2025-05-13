@@ -156,7 +156,11 @@ public class Server {
     }
 
     public static void main(String[] args){ //main
-		Server server = new Server(10000); //待ち受けポート10000番でサーバオブジェクトを準備
+        int serverPort = 10000; //デフォルトの待ち受けポート10000番
+        if (args.length > 0) {
+            serverPort = Integer.parseInt(args[0]);
+        }
+		Server server = new Server(serverPort); //サーバオブジェクトを準備
 		server.acceptClient(); //クライアント受け入れを開始
 	}
 }

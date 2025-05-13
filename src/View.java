@@ -6,13 +6,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Point;
 
-public class View extends JFrame implements ActionListener { // クラス名をViewに変更
+public class View extends JFrame implements ActionListener {
 
     // --- 定数 ---
     // Screen names
     private static final String MENU_SCREEN = "Menu";
     private static final String CPU_SETTINGS_SCREEN = "CPU_Settings";
-    private static final String LOGIN_SCREEN = "Login"; // UI.javaから追加
+    private static final String LOGIN_SCREEN = "Login";
     private static final String GAME_SCREEN = "Game";
     // Othello クラスの定数 (描画で使用)
     private static final int SIZE = 8; // BoardPanel で使用
@@ -25,13 +25,13 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     private CardLayout cardLayout;
     private Client client; // Clientへの参照
 
-    // Screens (based on UI.java structure)
+    // Screens
     private JPanel mainMenuPanel;
     private JPanel cpuSettingsPanel;
-    private JPanel loginScreenPanel; // UI.javaから追加
+    private JPanel loginScreenPanel;
     private JPanel gameScreenPanel;
 
-    // Components (based on UI.java) - Declare components that need to be accessed across methods
+    // Components - Declare components that need to be accessed across methods
     // Main Screen (ActionListenerはactionPerformedで処理)
     private JButton mainscreen_button_player;
     private JButton mainscreen_button_cpu;
@@ -58,20 +58,19 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     private JLabel gamescreen_label_opppiece;
     private JLabel gamescreen_label_opppiececount;
     private JLabel gamescreen_label_turnplayer;
-    private JButton gamescreen_button_surrender; // UI.javaから追加
-    private JButton passButton; // ScreenUpdaterから継承
+    private JButton gamescreen_button_surrender;
 
 
     // --- 状態 ---
-    private Integer[][] boardState; // 盤面データ (ScreenUpdaterから継承)
+    private Integer[][] boardState; // 盤面データ 
 
 
     /**
      * コンストラクタ
      */
-    public View() { // クラス名をViewに変更
+    public View() {
         super("オセロゲーム");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // UI.javaに合わせる (ゲーム終了ボタンでも終了処理を行う想定)
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // (ゲーム終了ボタンでも終了処理を行う想定)
 
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
@@ -91,10 +90,10 @@ public class View extends JFrame implements ActionListener { // クラス名をV
 
         add(cardPanel);
 
-        // サイズ設定はUI.javaに合わせるか、適切なサイズに調整
-        setSize(1000, 650); // UI.javaから
-        setMinimumSize(new Dimension(450, 550)); // ScreenUpdaterから (最小サイズ)
-        setLocationRelativeTo(null); // 中央に表示 (ScreenUpdaterから)
+        // サイズ設定は適切なサイズに調整
+        setSize(1000, 650);
+        setMinimumSize(new Dimension(450, 550)); // (最小サイズ)
+        setLocationRelativeTo(null); // 中央に表示
 
         // 初期表示はメインメニュー
         cardLayout.show(cardPanel, MENU_SCREEN);
@@ -111,7 +110,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         }
     }
 
-    /** メインメニュー画面セットアップ (UI.javaのmainScreenを元に) */
+    /** メインメニュー画面セットアップ */
     private void setupMainMenu() {
         mainMenuPanel = new JPanel();
         mainMenuPanel.setLayout(new BoxLayout(mainMenuPanel, BoxLayout.Y_AXIS));
@@ -149,7 +148,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         mainMenuPanel.add(panel1_bottom);
     }
 
-    /** CPU設定画面セットアップ (UI.javaのcpuChoiceScreenを元に、強さ選択はScreenUpdater方式で) */
+    /** CPU設定画面セットアップ*/
     private void setupCpuSettingsScreen() {
         cpuSettingsPanel = new JPanel();
         cpuSettingsPanel.setLayout(new BoxLayout(cpuSettingsPanel, BoxLayout.Y_AXIS));
@@ -158,13 +157,13 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         JPanel panel2_2 = new JPanel();
         panel2_2.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 0));
 
-        // 強さ選択部分をJComboBoxに変更
+        // 強さ選択部分
         JPanel cpuStrengthPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0)); // 配置を調整
-        JLabel cpuStrengthLabel = new JLabel("CPU の強さ:"); // ScreenUpdaterから
-        cpuStrengthLabel.setFont(new Font("MS Gothic", Font.PLAIN, 25)); // UI.javaのフォントサイズに合わせる
-        String[] strengthLevels = { "弱い", "普通", "強い" }; // ScreenUpdaterから
-        cpuStrengthComboBox = new JComboBox<>(strengthLevels); // ScreenUpdaterから
-        cpuStrengthComboBox.setFont(new Font("MS Gothic", Font.PLAIN, 25)); // UI.javaのフォントサイズに合わせる
+        JLabel cpuStrengthLabel = new JLabel("CPU の強さ:");
+        cpuStrengthLabel.setFont(new Font("MS Gothic", Font.PLAIN, 25));
+        String[] strengthLevels = { "弱い", "普通", "強い" };
+        cpuStrengthComboBox = new JComboBox<>(strengthLevels);
+        cpuStrengthComboBox.setFont(new Font("MS Gothic", Font.PLAIN, 25));
         cpuStrengthPanel.add(cpuStrengthLabel);
         cpuStrengthPanel.add(cpuStrengthComboBox);
 
@@ -231,7 +230,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         panel2_4.add(cpuchoicescreen_button_confirm);
         cpuSettingsPanel.add(panel2_4);
 
-        // 「メニューに戻る」ボタンをScreenUpdaterから追加
+        // 「メニューに戻る」ボタンを追加
         cpuSettings_backButton = new JButton("メニューに戻る"); // 変数として保持
         cpuSettings_backButton.addActionListener(e -> cardLayout.show(cardPanel, MENU_SCREEN));
         JPanel backButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // 中央配置用のパネル
@@ -241,7 +240,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         cpuSettingsPanel.add(Box.createRigidArea(new Dimension(0, 20))); // 下部に余白
     }
 
-    /** ログイン画面セットアップ (UI.javaのloginScreenを元に) */
+    /** ログイン画面セットアップ */
     private void setupLoginScreen() {
         loginScreenPanel = new JPanel();
         loginScreenPanel.setLayout(new BoxLayout(loginScreenPanel, BoxLayout.Y_AXIS));
@@ -302,7 +301,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         loginScreenPanel.add(backButtonPanel); // 下部に追加
     }
 
-    /** ゲーム画面セットアップ (UI.javaのgameScreenを元に) */
+    /** ゲーム画面セットアップ  */
     private void setupGameScreen() {
         gameScreenPanel = new JPanel();
         gameScreenPanel.setLayout(new BorderLayout(10, 10));
@@ -367,27 +366,13 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         // Bottom Panel
         JPanel panel4_bottom = new JPanel();
         panel4_bottom.setLayout(new FlowLayout(FlowLayout.RIGHT, 50, 0));
-        panel4_bottom.setPreferredSize(new Dimension(1000, 100)); // Height setting from UI.java
+        panel4_bottom.setPreferredSize(new Dimension(1000, 100));
 
-        gamescreen_label_turnplayer = new JLabel(" ゲーム待機中..."); // 初期表示をScreenUpdaterに合わせる
+        gamescreen_label_turnplayer = new JLabel(" ゲーム待機中...");
         gamescreen_label_turnplayer.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_turnplayer.setFont(new Font("MS Gothic", Font.PLAIN, 30));
 
-        passButton = new JButton("パス"); // ScreenUpdaterから継承
-        passButton.setToolTipText("あなたの番で、置ける場所がない場合に押せます (ネットワーク対戦時)");
-        passButton.setEnabled(false); // 初期状態は無効
-        // ActionListenerをここで設定
-        passButton.addActionListener(e -> {
-            if (client != null && client.isNetworkMatch()) { // Clientに isNetworkMatch が必要
-                // 自分のターンかどうかのチェックは Client 側でも行う想定
-                client.sendPassToServer(); // Clientに sendPassToServer が必要
-            } else if (client != null && !client.isNetworkMatch()){
-                 JOptionPane.showMessageDialog(this, "CPU対戦ではパスは自動で行われます。", "情報", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-        passButton.setVisible(false); // CPU対戦時は非表示にするため初期は非表示
-
-        gamescreen_button_surrender = new JButton("退出"); // UI.javaから追加
+        gamescreen_button_surrender = new JButton("退出");
         gamescreen_button_surrender.setPreferredSize(new Dimension(80, 80));
         gamescreen_button_surrender.setFont(new Font("MS Gothic", Font.BOLD, 20));
         gamescreen_button_surrender.setEnabled(false); // 初期状態は無効
@@ -408,7 +393,6 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         // レイアウト調整：手番表示とボタン
         JPanel turnAndButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // 間隔調整
         turnAndButtonsPanel.add(gamescreen_label_turnplayer);
-        turnAndButtonsPanel.add(passButton); // パスボタンを追加
         turnAndButtonsPanel.add(gamescreen_button_surrender); // 退出ボタンを追加
 
         panel4_bottom.add(turnAndButtonsPanel);
@@ -424,7 +408,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     }
 
 
-    /** 盤面クリックリスナー追加 (ScreenUpdaterから継承) */
+    /** 盤面クリックリスナー追加  */
     private void addBoardClickListener() {
         if (boardPanel == null) {
             System.err.println("Error: boardPanel is null in addBoardClickListener.");
@@ -482,59 +466,30 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         // 他の画面のボタンイベントは各setupメソッド内で直接処理される
     }
 
-     /** ネットワーク接続情報入力ダイアログ (ScreenUpdaterから継承・引数playerNameを追加) */
+     /** ネットワーク接続情報入力ダイアログ */
      private void showNetworkDialog(String playerName) {
-         JTextField serverField = new JTextField("localhost", 15);
-         JTextField portField = new JTextField("10000", 5);
-
-         Object[] message = { "サーバーアドレス:", serverField, "ポート番号:", portField, "プレイヤー名:", playerName }; // playerNameを表示
-
-         int option = JOptionPane.showConfirmDialog(this, message, "ネットワーク対戦 接続設定", JOptionPane.OK_CANCEL_OPTION);
-         if (option == JOptionPane.OK_OPTION) {
-             String serverAddr = serverField.getText().trim();
-             int port;
-             try {
-                 port = Integer.parseInt(portField.getText().trim());
-                 if (port <= 0 || port > 65535) throw new NumberFormatException("ポート番号範囲外");
-             } catch (NumberFormatException ex) {
-                 JOptionPane.showMessageDialog(this, "ポート番号は 1～65535 の数字で入力してください。", "入力エラー", JOptionPane.WARNING_MESSAGE);
-                 // エラーが発生したらログイン画面に戻る
-                 cardLayout.show(cardPanel, LOGIN_SCREEN);
-                 return;
-             }
-
-             if (client != null) {
-                 // Client.startGame (ネットワークモード用) を呼び出す
-                 client.startGame(false, playerName, serverAddr, port); // isCpu=false
-             } else {
-                  System.err.println("Error: Client is null.");
-                  JOptionPane.showMessageDialog(this, "内部エラーが発生しました。", "エラー", JOptionPane.ERROR_MESSAGE);
-                  // エラーが発生したらログイン画面に戻る
-                  cardLayout.show(cardPanel, LOGIN_SCREEN);
-             }
-         } else {
-             // キャンセルされた場合、ログイン画面に戻る
-             cardLayout.show(cardPanel, LOGIN_SCREEN);
-         }
+        if (client != null) {
+            // Client.startGame (ネットワークモード用) を呼び出す
+            client.startGame(false, playerName, client.getServerAddress(), client.getServerPort()); // isCpu=false
+        } else {
+            System.err.println("Error: Client is null.");
+            // エラーが発生したらログイン画面に戻る
+            cardLayout.show(cardPanel, LOGIN_SCREEN);
+        }
      }
 
-    /** ゲーム画面表示 (ScreenUpdaterから継承・UIリセット含む) */
+    /** ゲーム画面表示 */
     public void showGameScreen() {
         SwingUtilities.invokeLater(()-> {
             cardLayout.show(cardPanel, GAME_SCREEN);
             // ゲーム画面表示時に有効化/無効化するボタンを設定
             if (gamescreen_button_surrender != null) gamescreen_button_surrender.setEnabled(true); // 退出ボタンは有効
-            if (passButton != null) {
-                passButton.setEnabled(false); // パスボタンはターンが来てから判断
-                 // ネットワーク対戦かどうかで表示/非表示を切り替える必要があるが、
-                 // updateStatusでClientの状態を見て制御するのが自然
-            }
              // updateStatusが呼ばれるまで各種ラベルはデフォルト値のまま
         });
     }
 
     /**
-     * 盤面更新 (ScreenUpdaterから継承)
+     * 盤面更新 
      * BoardPanelに描画を任せる
      */
     public void updateBoard(Integer[][] board) {
@@ -545,7 +500,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     }
 
     /**
-     * ステータス表示更新 (ScreenUpdaterから継承・UI.javaのラベル更新を統合)
+     * ステータス表示更新
      * @param playerTurn 現在の手番 ("黒" or "白")
      * @param statusText 現在のゲーム状態を示すテキスト
      * @param opponentInfo 対戦相手の情報 (ネットワーク対戦時)
@@ -557,47 +512,16 @@ public class View extends JFrame implements ActionListener { // クラス名をV
                  gamescreen_label_turnplayer.setText(playerTurn != null ? playerTurn + "の番" : "ゲーム待機中...");
             }
 
-            // ウィンドウタイトルに対戦相手情報を表示 (ScreenUpdaterから継承)
+            // ウィンドウタイトルに対戦相手情報を表示 
             if (opponentInfo != null && !opponentInfo.isEmpty() && !opponentInfo.equals("?")) {
                  setTitle("オセロゲーム - vs " + opponentInfo);
             } else {
                  setTitle("オセロゲーム"); // デフォルトのタイトル
             }
-
-            // パスボタンの有効/無効・表示/非表示制御 (ScreenUpdaterから継承)
-            if(client != null){
-                 if (client.isNetworkMatch()){
-                    boolean isMyTurn = false;
-                    if (client.getHumanPlayer() != null && playerTurn != null) {
-                         isMyTurn = playerTurn.equals(client.getHumanPlayer().getStoneColor());
-                    }
-                    if (passButton != null) {
-                        passButton.setEnabled(isMyTurn);
-                        passButton.setVisible(true); // ネットワーク対戦時のみ表示
-                    }
-                 } else {
-                    // CPU対戦ではパスボタンは無効かつ非表示
-                    if (passButton != null) {
-                        passButton.setEnabled(false);
-                        passButton.setVisible(false);
-                    }
-                 }
-            } else {
-                // Clientがnullの場合もパスボタンは無効・非表示
-                if (passButton != null) {
-                    passButton.setEnabled(false);
-                    passButton.setVisible(false);
-                }
-            }
         });
     }
-    // 互換性のための古い updateStatus (新しい方を呼び出す) - 必要であれば残す
-    // public void updateStatus(String playerTurn, String statusText) {
-    //     updateStatus(playerTurn, statusText, null);
-    // }
 
-
-  // プレイヤー情報更新 (UI.javaから継承)
+  // プレイヤー情報更新
   public void updatePlayerInfo(String playerName, String playerColor){
     SwingUtilities.invokeLater(() -> {
         if (gamescreen_label_playername != null) gamescreen_label_playername.setText(playerName);
@@ -605,7 +529,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     });
   }
 
-  // 対戦相手情報更新 (UI.javaから継承)
+  // 対戦相手情報更新
   public void updateOpponentInfo(String oppName, String oppColor){
      SwingUtilities.invokeLater(() -> {
         if (gamescreen_label_oppname != null) gamescreen_label_oppname.setText(oppName);
@@ -613,21 +537,21 @@ public class View extends JFrame implements ActionListener { // クラス名をV
      });
   }
 
-  // 対戦相手石数更新 (UI.javaから継承)
+  // 対戦相手石数更新
   public void updateOpponentPieceCount(int oppPieceCount){
      SwingUtilities.invokeLater(() -> {
         if (gamescreen_label_opppiececount != null) gamescreen_label_opppiececount.setText(oppPieceCount + "枚");
      });
   }
 
-  // プレイヤー石数更新 (UI.javaから継承)
+  // プレイヤー石数更新
   public void updatePlayerPieceCount(int playerPieceCount){
     SwingUtilities.invokeLater(() -> {
         if (gamescreen_label_playerpiececount != null) gamescreen_label_playerpiececount.setText(playerPieceCount + "枚");
     });
   }
 
-  // 盤面の入力を有効/無効化 (UI.javaから継承 - BoardPanelに対して行う)
+  // 盤面の入力を有効/無効化 (BoardPanelに対して行う)
   public void enableBoardInput(boolean state){
        // BoardPanel 自体にsetEnabled(state)を呼ぶことで、MouseListenerの発火を制御できる
        if (boardPanel != null) {
@@ -638,12 +562,12 @@ public class View extends JFrame implements ActionListener { // クラス名をV
   }
 
 
-  // メイン画面に戻る (UI.javaから継承・リセット処理追加)
+  // メイン画面に戻る (リセット処理追加)
   public void showMainScreen(){
     SwingUtilities.invokeLater(() -> {
         cardLayout.show(cardPanel, MENU_SCREEN);
         setTitle("オセロゲーム"); // タイトルリセット
-        // ゲーム画面の表示を初期状態に戻す (ScreenUpdaterのresetGameUIに相当)
+        // ゲーム画面の表示を初期状態に戻す
         if (gamescreen_label_playername != null) gamescreen_label_playername.setText("Player 1");
         if (gamescreen_label_playerpiece != null) gamescreen_label_playerpiece.setText("黒");
         if (gamescreen_label_playerpiececount != null) gamescreen_label_playerpiececount.setText("piece: 0");
@@ -652,12 +576,8 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         if (gamescreen_label_opppiececount != null) gamescreen_label_opppiececount.setText("piece: 0");
         if (gamescreen_label_turnplayer != null) gamescreen_label_turnplayer.setText("ゲーム待機中..."); // 初期表示に戻す
         if (gamescreen_button_surrender != null) gamescreen_button_surrender.setEnabled(false); // 退出ボタン無効化
-        if (passButton != null) {
-            passButton.setEnabled(false); // パスボタン無効化
-            passButton.setVisible(false); // パスボタン非表示化
-        }
 
-        // CPU設定画面の決定ボタンを有効化 (UI.javaのshowMainScreenに合わせる)
+        // CPU設定画面の決定ボタンを有効化
         // ゲーム開始後に無効化される想定だが、メニューに戻ったら再度有効化
         if (cpuchoicescreen_button_confirm != null) {
              cpuchoicescreen_button_confirm.setEnabled(true);
@@ -687,7 +607,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
 
 
     /**
-     * BoardPanel (ScreenUpdaterから継承)
+     * BoardPanel 
      * 盤面の描画とクリック座標の計算を行う
      */
     class BoardPanel extends JPanel {
@@ -714,11 +634,11 @@ public class View extends JFrame implements ActionListener { // クラス名をV
             int startY = (panelHeight - boardSize) / 2; // 中央に配置
 
 
-            // 背景 (ScreenUpdaterの方式を維持)
+            // 背景
             g.setColor(new Color(0, 128, 0)); // Othello green
             g.fillRect(startX, startY, boardSize, boardSize);
 
-            // グリッド線 (ScreenUpdaterの方式を維持, ストローク制御なし)
+            // グリッド線
             g.setColor(Color.BLACK);
             // g2d.setStroke(new BasicStroke(1)); // ストローク制御を削除
             for (int i = 0; i <= ROWS; i++) {
@@ -730,7 +650,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
             // g2d.setStroke(new BasicStroke(2)); // ストローク制御を削除
             g.drawRect(startX, startY, boardSize, boardSize); // 外枠も標準ストローク
 
-            // 石の描画 (ScreenUpdaterの方式を維持, Graphicsオブジェクトを渡す)
+            // 石の描画
             if (boardState != null) {
                 for (int i = 0; i < ROWS; i++) {
                     for (int j = 0; j < COLS; j++) {
@@ -747,7 +667,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
             }
         }
 
-        // 石を描画するヘルパーメソッド (ScreenUpdaterから継承, Graphicsオブジェクトを受け取るように変更)
+        // 石を描画するヘルパーメソッド
         private void drawPiece(Graphics g, int startX, int startY, int cellWidth, int cellHeight, int row, int col, Color color) {
             int pieceMargin = Math.min(cellWidth, cellHeight) / 8;
             int pieceDiameter = Math.min(cellWidth, cellHeight) - 2 * pieceMargin;
@@ -763,7 +683,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         }
 
 
-        // クリック座標から盤面上のマス目を計算 (ScreenUpdaterから継承)
+        // クリック座標から盤面上のマス目を計算 
         public Point getBoardCoordinates(Point clickPoint) {
             int panelWidth = getWidth();
             int panelHeight = getHeight();

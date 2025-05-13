@@ -44,13 +44,15 @@ public class Client {
     private volatile boolean isConnected = false;
     private Thread receiverThread;
     private ScheduledExecutorService heartbeatExecutor; // null許容、必要時に生成
-    private String serverAddress = "localhost";
-    private int serverPort = 10000;
+    private String serverAddress;
+    private int serverPort;
 
 
     /** コンストラクタ */
-    public Client(View View) {
+    public Client(View View, String serverAddress, int serverPort) {
         this.View = View;
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
         this.boardState = new Integer[SIZE][SIZE];
         Othello.initBoard(boardState); // 初期盤面
         this.humanPlayer = new Player();
@@ -869,10 +871,26 @@ public class Client {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Client gameClient = null;
+            String serverAddress = "localhost";
+            int serverPort = 10000;
+            if (args.length > 1) {
+                serverAddress = args[0];
+                try {
+                    serverPort = Integer.parseInt(args[1]);
+                    if (serverPort <= 0 || serverPort > 65535) {
+                        System.err.println("警告: 無効なポート番号が指定されました。デフォルト値を使用します: " + args[1]);
+                        serverPort = 10000;
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("警告: ポート番号が数値ではありません。デフォルト値を使用します: " + args[1]);
+                    serverPort = 10000;
+                }
+            }
             try {
                 View View = new View();
-                gameClient = new Client(View);
+                gameClient = new Client(View, serverAddress, serverPort);
                 View.setClient(gameClient);
+
                 final Client finalGameClient = gameClient;
                 View.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
@@ -897,6 +915,8 @@ public class Client {
     }
 
     public boolean isNetworkMatch() { return isNetworkMatch; }
+    public String getServerAddress() { return serverAddress; }
+    public int getServerPort() { return serverPort; }
     public Player getHumanPlayer() { return humanPlayer; }
     public Player getCurrentOpponentPlayer() { return currentOpponentPlayer; } // Getter for the current opponent
 }
