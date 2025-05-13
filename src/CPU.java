@@ -139,15 +139,18 @@ public class CPU {
     }
 
     // CPU用終了判定メソッド
-    private boolean isGameOver(Integer[][] board) {
-        // 自分の合法手をチェック
-        if (Othello.hasValidMove(board, turn)) {
+    private boolean isGameOver(Integer[][] board, String currentPlayerTurn) {
+        // currentPlayerTurn のプレイヤーが合法手を持つかチェック
+        if (Othello.hasValidMove(board, currentPlayerTurn)) {
             return false;
         }
-        // 相手の合法手をチェック
-        String opponentturn = "Black".equals(turn) ? "White" : "Black";
-        boolean opponentHasMove = Othello.hasValidMove(board, opponentturn);
-        return !opponentHasMove; // 両者とも合法手がない場合に終了
+        // currentPlayerTurn の相手プレイヤーが合法手を持つかチェック
+        String opponentOfCurrentPlayer = "Black".equals(currentPlayerTurn) ? "White" : "Black";
+        if (Othello.hasValidMove(board, opponentOfCurrentPlayer)) {
+            return false;
+        }
+        // 両者とも合法手がない場合のみゲーム終了
+        return true;
     }
 
     // 盤面の空きマスを数えるメソッド
@@ -182,10 +185,11 @@ public class CPU {
     // NegaAlpha法による探索メソッド
     private int negaAlpha(Integer[][] board, int depth, int color, int alpha, int beta) {
         try {
+            String currentPlayerTurn = (color == 1) ? "Black" : "White";
             // String indent = "  ".repeat(this.depth - depth);
             // System.out.println(indent + "Entering depth: " + depth + ", Color: " + (color == 1 ? "Black" : "White")
                     // + ", Alpha: " + alpha + ", Beta: " + beta);
-            if (depth == 0 || isGameOver(board)) {
+            if (depth == 0 || isGameOver(board, currentPlayerTurn)) {
                 int eval = color * evaluate(board);
                 // System.out.println(indent + "Leaf node, Evaluation: " + eval);
                 return eval; // 葉ノードでは評価値を返す
@@ -225,7 +229,6 @@ public class CPU {
                     tempBoard[i] = board[i].clone();
                 }
 
-                String currentPlayerTurn = (color == 1) ? "Black" : "White";
                 Othello.makeMove(tempBoard, move[0], move[1], currentPlayerTurn);
                 // System.out.println(indent + "Trying move: [" + move[0] + ", " + move[1] + "]");
                 int score = -negaAlpha(tempBoard, depth - 1, -color, -beta, -alpha);
@@ -260,12 +263,12 @@ public class CPU {
     }
 
     // 完全探索用のNegaAlphaメソッド
-    private int perfectSearchNegaAlpha(Integer[][] board, int color, int alpha, int beta) {
+    private int perfectSearch(Integer[][] board, int color, int alpha, int beta) {
         // color: 現在の手番プレイヤーの符号 (1:黒, -1:白)
         String currentPlayerTurn = (color == 1) ? "Black" : "White";
 
         // 終端条件: ゲーム終了
-        if (isGameOver(board)) {
+        if (isGameOver(board, currentPlayerTurn)) {
             int blackStones = countPlayerStones(board, "Black");
             int whiteStones = countPlayerStones(board, "White");
             int stoneDifference = blackStones - whiteStones; // 黒から見た石差
@@ -303,10 +306,9 @@ public class CPU {
 
         if (possibleMoves.isEmpty()) {
             // 打てる手がない（パス）
-            return -perfectSearchNegaAlpha(board, -color, -beta, -alpha);
+            return -perfectSearch(board, -color, -beta, -alpha);
         }
 
-        // int maxScore = Integer.MIN_VALUE + 1; // NegaAlphaではalphaを更新していく
         for (int[] move : possibleMoves) {
             Integer[][] tempBoard = new Integer[8][8];
             for (int i = 0; i < 8; i++) {
@@ -314,17 +316,14 @@ public class CPU {
             }
             Othello.makeMove(tempBoard, move[0], move[1], currentPlayerTurn);
 
-            int score = -perfectSearchNegaAlpha(tempBoard, -color, -beta, -alpha);
+            int score = -perfectSearch(tempBoard, -color, -beta, -alpha);
 
-            // if (score > maxScore) { // NegaAlphaでは不要
-            //     maxScore = score;
-            // }
             alpha = Math.max(alpha, score);
             if (alpha >= beta) {
                 break; // β枝刈り
             }
         }
-        return alpha; // または maxScore (NegaAlphaではalphaを返すのが一般的)
+        return alpha;
     }
     
 
@@ -368,7 +367,7 @@ public class CPU {
                 int score;
                 if (usePerfectSearch) {
                     // 完全探索開始時の手番は相手 (CPUが打った後なので)
-                    score = -perfectSearchNegaAlpha(tempBoard, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                    score = -perfectSearch(tempBoard, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                 } else {
                     // 通常探索開始時の手番は相手
                     score = -negaAlpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
