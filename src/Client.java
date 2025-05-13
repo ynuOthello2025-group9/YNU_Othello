@@ -288,6 +288,13 @@ public class Client {
             this.opponentPlayedMoveLast = true; // 相手が直前にパスしたわけではない (自分が手を打ったので相手のパス状態はリセットされるべき)
     
             checkNetworkGameStatusAndProceed(); // 新しい状態確認メソッドを呼ぶ
+            if(humanPlayer.getOpponentColor().equals("黒")){
+                View.updateOpponentPieceCount(Othello.numberOfStone(boardState,BLACK));
+                View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE));
+            }else{
+                View.updateOpponentPieceCount(Othello.numberOfStone(boardState,WHITE));
+                View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK)); 
+            }
     
         } else { // CPU対戦
             if (!isPlayerTurnCPU || humanPlayer.getStoneColor() == null || !currentTurn.equals(humanPlayer.getStoneColor())) {
@@ -298,6 +305,13 @@ public class Client {
             if (Othello.isValidMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()))) {
                 Othello.makeMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()));
                 updateBoardAndUI(boardState);
+                //TODO
+                if(humanPlayer.getStoneColor().equals("黒")){
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK));
+                }else{
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE)); 
+                }
+                
                 updateStatusAndUI(currentTurn, humanPlayer.getPlayerName() + " が ("+ row + "," + col + ") に置きました。", opponentName);
                 if (!checkGameOverCPU()) {
                     switchTurnCPU();
@@ -335,6 +349,13 @@ public class Client {
              if (cpuMove != null && cpuMove[0] != -1) {
                  Othello.makeMove(boardState, cpuMove[0], cpuMove[1], toOthelloColor(currentTurn)); // currentTurn is CPU's color here
                  updateBoardAndUI(boardState);
+                 if(humanPlayer.getOpponentColor().equals("黒")){
+                    View.updateOpponentPieceCount(Othello.numberOfStone(boardState,BLACK));
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE));
+                }else{
+                    View.updateOpponentPieceCount(Othello.numberOfStone(boardState,WHITE));
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK)); 
+                }
                  updateStatusAndUI(currentTurn, opponentName + " が ("+ cpuMove[0] + "," + cpuMove[1] + ") に置きました。", opponentName);
                  if (!checkGameOverCPU()) switchTurnCPU();
              } else {

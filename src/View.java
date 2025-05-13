@@ -319,10 +319,10 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_playername.setFont(new Font("Arial", Font.PLAIN, 30));
         gamescreen_label_playername.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_playerpiece = new JLabel("黒");
-        gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.PLAIN, 30));
+        gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_playerpiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_playerpiececount = new JLabel(("piece: 0"));
-        gamescreen_label_playerpiececount.setFont(new Font("Arial", Font.PLAIN, 30));
+        gamescreen_label_playerpiececount = new JLabel(("枚数: 0"));
+        gamescreen_label_playerpiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_playerpiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panel4_player.add(gamescreen_label_playername);
@@ -344,10 +344,10 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_oppname.setFont(new Font("Arial", Font.PLAIN, 30));
         gamescreen_label_oppname.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_opppiece = new JLabel("黒");
-        gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.PLAIN, 30));
+        gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_opppiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_opppiececount = new JLabel(("piece: 0"));
-        gamescreen_label_opppiececount.setFont(new Font("Arial", Font.PLAIN, 30));
+        gamescreen_label_opppiececount = new JLabel(("枚数: 0"));
+        gamescreen_label_opppiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_opppiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panel4_opp.add(gamescreen_label_oppname);
@@ -438,6 +438,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
                      if (boardCoords != null) {
                          // クライアントに対象のマス目 (row, col) を通知
                          client.handlePlayerMove(boardCoords.y, boardCoords.x); // row, col
+                         // handle change piece count
                      }
                 }
             }
