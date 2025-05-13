@@ -6,9 +6,13 @@ public class CPU {
     private int depth; // 探索の深さ
 
     // 定数
+    // 完全探索に切り替える空きマスの数の閾値 (例: 10手読みなら空きマス10個)
+    private static final int EMPTY_SQUARES_FOR_PERFECT_SEARCH = 10; 
     private static final int N_LINE = 8; // 行数
     private static final int SCALE = 256;
     private static final int LINE_PATTERN = 6561; // 各行の可能なパターン数（3^8）
+    private static final int PERFECT_SEARCH_WIN_SCORE_BASE = 100000;  // 勝ちの基本スコア
+    private static final int PERFECT_SEARCH_DRAW_SCORE = 0;          // 引き分けのスコア
 
     // 各マスの評価値
     private static final int[] CELL_WEIGHT_256 = {
@@ -146,6 +150,35 @@ public class CPU {
         return !opponentHasMove; // 両者とも合法手がない場合に終了
     }
 
+    // 盤面の空きマスを数えるメソッド
+    private int countEmptySquares(Integer[][] board) {
+        int count = 0;
+        for (int i = 0; i < N_LINE; i++) {
+            for (int j = 0; j < N_LINE; j++) {
+                if (board[i][j] == 0) { // 0 が空きマスを表すと仮定
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    // 指定されたプレイヤーの石の数を数えるメソッド
+    private int countPlayerStones(Integer[][] board, String playerTurn) {
+        // ボードの表現に合わせて石の値を設定 (例: 黒=1, 白=2)
+        int stoneValue = "Black".equals(playerTurn) ? 1 : 2;
+        int count = 0;
+        for (int i = 0; i < N_LINE; i++) {
+            for (int j = 0; j < N_LINE; j++) {
+                if (board[i][j] == stoneValue) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+
     // NegaAlpha法による探索メソッド
     private int negaAlpha(Integer[][] board, int depth, int color, int alpha, int beta) {
         try {
@@ -226,6 +259,75 @@ public class CPU {
         }
     }
 
+    // 完全探索用のNegaAlphaメソッド
+    private int perfectSearchNegaAlpha(Integer[][] board, int color, int alpha, int beta) {
+        // color: 現在の手番プレイヤーの符号 (1:黒, -1:白)
+        String currentPlayerTurn = (color == 1) ? "Black" : "White";
+
+        // 終端条件: ゲーム終了
+        if (isGameOver(board)) {
+            int blackStones = countPlayerStones(board, "Black");
+            int whiteStones = countPlayerStones(board, "White");
+            int stoneDifference = blackStones - whiteStones; // 黒から見た石差
+
+            // color の視点での勝敗と石差を評価値とする
+            if (color == 1) { // 黒 (CPU) の手番の視点
+                if (stoneDifference > 0) { // 黒の勝ち
+                    return PERFECT_SEARCH_WIN_SCORE_BASE + stoneDifference;
+                } else if (stoneDifference < 0) { // 黒の負け (白の勝ち)
+                    return -PERFECT_SEARCH_WIN_SCORE_BASE + stoneDifference; // stoneDifferenceは負なので、より負の大きな値になる
+                } else { // 引き分け
+                    return PERFECT_SEARCH_DRAW_SCORE;
+                }
+            } else { // 白 (相手) の手番の視点 (color == -1)
+                if (stoneDifference < 0) { // 白の勝ち (黒の負け)
+                    // 白から見た石差は (-stoneDifference)
+                    return PERFECT_SEARCH_WIN_SCORE_BASE + (-stoneDifference);
+                } else if (stoneDifference > 0) { // 白の負け (黒の勝ち)
+                    return -PERFECT_SEARCH_WIN_SCORE_BASE + (-stoneDifference); // (-stoneDifference)は負
+                } else { // 引き分け
+                    return PERFECT_SEARCH_DRAW_SCORE;
+                }
+            }
+        }
+
+        // --- 探索ロジック (ここは変更なし) ---
+        ArrayList<int[]> possibleMoves = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (Othello.isValidMove(board, i, j, currentPlayerTurn)) {
+                    possibleMoves.add(new int[] { i, j });
+                }
+            }
+        }
+
+        if (possibleMoves.isEmpty()) {
+            // 打てる手がない（パス）
+            return -perfectSearchNegaAlpha(board, -color, -beta, -alpha);
+        }
+
+        // int maxScore = Integer.MIN_VALUE + 1; // NegaAlphaではalphaを更新していく
+        for (int[] move : possibleMoves) {
+            Integer[][] tempBoard = new Integer[8][8];
+            for (int i = 0; i < 8; i++) {
+                tempBoard[i] = board[i].clone();
+            }
+            Othello.makeMove(tempBoard, move[0], move[1], currentPlayerTurn);
+
+            int score = -perfectSearchNegaAlpha(tempBoard, -color, -beta, -alpha);
+
+            // if (score > maxScore) { // NegaAlphaでは不要
+            //     maxScore = score;
+            // }
+            alpha = Math.max(alpha, score);
+            if (alpha >= beta) {
+                break; // β枝刈り
+            }
+        }
+        return alpha; // または maxScore (NegaAlphaではalphaを返すのが一般的)
+    }
+    
+
     // 操作を決定するメソッド
     private int[] decideMove(Integer[][] board) {
         try {
@@ -248,13 +350,30 @@ public class CPU {
             int[] bestMove = possibleMoves.get(0);
             int color = "Black".equals(turn) ? 1 : -1;
 
+            int emptySquares = countEmptySquares(board);
+            boolean usePerfectSearch = (emptySquares <= EMPTY_SQUARES_FOR_PERFECT_SEARCH);
+
+            if (usePerfectSearch) {
+                System.out.println("CPU: Entering Perfect Search Mode (Empty Squares: " + emptySquares + ")");
+            } else {
+                // System.out.println("CPU: Using Normal Search Mode (Depth: " + depth + ", Empty Squares: " + emptySquares + ")");
+            }
+
             for (int[] move : possibleMoves) {
                 Integer[][] tempBoard = new Integer[8][8];
                 for (int i = 0; i < 8; i++) {
                     tempBoard[i] = board[i].clone();
                 }
                 Othello.makeMove(tempBoard, move[0], move[1], turn);
-                int score = -negaAlpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                int score;
+                if (usePerfectSearch) {
+                    // 完全探索開始時の手番は相手 (CPUが打った後なので)
+                    score = -perfectSearchNegaAlpha(tempBoard, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                } else {
+                    // 通常探索開始時の手番は相手
+                    score = -negaAlpha(tempBoard, depth - 1, -color, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                }
+
                 // System.out.println("CPU: Evaluated move: [" + move[0] + ", " + move[1] + "], Score: " + score);
                 if (score > bestScore) {
                     bestScore = score;
