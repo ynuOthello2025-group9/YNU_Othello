@@ -64,6 +64,10 @@ JLabel gamescreen_label_opppiececount;
 JLabel gamescreen_label_turnplayer;
 JButton gamescreen_button_surrender;
 
+// dialogue popup component
+JDialog dialog;
+Timer timer;
+
 
 public UI(String title, Client client){
     super(title);
@@ -113,6 +117,7 @@ public void actionPerformed(ActionEvent e) {
             cardLayout.show(panel,"gamescreen");
             break;
         case "loginscreen_choseok":
+            //TODO: connect to server
             if(client.connectToServer(loginscreen_textarea_name.getText())){
                 isVsCpu=false;
                 gamescreen_button_surrender.setEnabled(false);
@@ -141,17 +146,19 @@ public void actionPerformed(ActionEvent e) {
                 int j = Integer.parseInt(parts[0]);
                 int i = Integer.parseInt(parts[1]);
                 int[] move={j,i};
-                client.sendMoveToServer(move);
-                updateBoard(move);
+                //TODO: send move to server and update the board
+                
             }   
     }
 
     
 }
-
+// put on hold
+/* 
     public void setClient(Client userClient){
         this.userClient = userClient;
     }
+*/
 
 // creating main screen
 public void mainScreen(){//TODO: tidy up
@@ -425,6 +432,41 @@ public void loginScreen(){//TODO: tidy up
   }
 
   // TODO: dialogue pop up 
+  public void dialog(){
+    dialog = new JDialog((JFrame) null, "Notification", true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setSize(300, 100);
+        dialog.setLocationRelativeTo(null);
+
+        timer = new Timer(10000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        timer.setRepeats(false); // Only run once
+        timer.start();
+
+        // Show dialog
+        dialog.setVisible(true);
+  }
+
+  // accept player move (to be completed)
+  public Integer[] acceptPlayerMove(){
+
+    return null;
+  }
+
+  // updating the screen (to be completed)
+  public void updateScreen(String gameState, Integer[][] board){
+    if(gameState.equals("YourTurn")){
+
+    }else if(gameState.equals("OpponentTurn")){
+
+    }else if(gameState.equals("Finished")){
+
+    }
+  }
 
   // to update player info
   public void updatePlayerInfo(String playerName,String playerColor){
@@ -488,5 +530,9 @@ public void loginScreen(){//TODO: tidy up
             }
         }
     }
+  }
+
+  public static void main(String[] args){
+
   }
 }
