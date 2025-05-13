@@ -49,8 +49,10 @@ public class Client {
 
 
     /** コンストラクタ */
-    public Client(View View) {
+    public Client(View View, String serverAddress, int serverPort) {
         this.View = View;
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
         this.boardState = new Integer[SIZE][SIZE];
         Othello.initBoard(boardState); // 初期盤面
         this.humanPlayer = new Player();
@@ -288,6 +290,13 @@ public class Client {
             this.opponentPlayedMoveLast = true; // 相手が直前にパスしたわけではない (自分が手を打ったので相手のパス状態はリセットされるべき)
     
             checkNetworkGameStatusAndProceed(); // 新しい状態確認メソッドを呼ぶ
+            if(humanPlayer.getOpponentColor().equals("黒")){
+                View.updateOpponentPieceCount(Othello.numberOfStone(boardState,BLACK));
+                View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE));
+            }else{
+                View.updateOpponentPieceCount(Othello.numberOfStone(boardState,WHITE));
+                View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK)); 
+            }
     
         } else { // CPU対戦
             if (!isPlayerTurnCPU || humanPlayer.getStoneColor() == null || !currentTurn.equals(humanPlayer.getStoneColor())) {
@@ -298,6 +307,12 @@ public class Client {
             if (Othello.isValidMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()))) {
                 Othello.makeMove(boardState, row, col, toOthelloColor(humanPlayer.getStoneColor()));
                 updateBoardAndUI(boardState);
+                if(humanPlayer.getStoneColor().equals("黒")){
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK));
+                }else{
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE)); 
+                }
+                
                 updateStatusAndUI(currentTurn, humanPlayer.getPlayerName() + " が ("+ row + "," + col + ") に置きました。", opponentName);
                 if (!checkGameOverCPU()) {
                     switchTurnCPU();
@@ -335,6 +350,13 @@ public class Client {
              if (cpuMove != null && cpuMove[0] != -1) {
                  Othello.makeMove(boardState, cpuMove[0], cpuMove[1], toOthelloColor(currentTurn)); // currentTurn is CPU's color here
                  updateBoardAndUI(boardState);
+                 if(humanPlayer.getOpponentColor().equals("黒")){
+                    View.updateOpponentPieceCount(Othello.numberOfStone(boardState,BLACK));
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE));
+                }else{
+                    View.updateOpponentPieceCount(Othello.numberOfStone(boardState,WHITE));
+                    View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK)); 
+                }
                  updateStatusAndUI(currentTurn, opponentName + " が ("+ cpuMove[0] + "," + cpuMove[1] + ") に置きました。", opponentName);
                  if (!checkGameOverCPU()) switchTurnCPU();
              } else {
@@ -869,9 +891,26 @@ public class Client {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Client gameClient = null;
+            String serverAddress = "localhost";
+            int serverPort = 10000;
+            if (args.length > 1) {
+                serverAddress = args[0];
+                try {
+                    serverPort = Integer.parseInt(args[1]);
+                    if (serverPort <= 0 || serverPort > 65535) {
+                        System.err.println("警告: 無効なポート番号が指定されました。デフォルト値を使用します: " + args[1]);
+                        serverAddress = "localhost";
+                        serverPort = 10000;
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("警告: ポート番号が数値ではありません。デフォルト値を使用します: " + args[1]);
+                    serverAddress = "localhost";
+                    serverPort = 10000;
+                }
+            }
             try {
                 View View = new View();
-                gameClient = new Client(View);
+                gameClient = new Client(View, serverAddress, serverPort);
                 View.setClient(gameClient);
                 final Client finalGameClient = gameClient;
                 View.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -899,4 +938,6 @@ public class Client {
     public boolean isNetworkMatch() { return isNetworkMatch; }
     public Player getHumanPlayer() { return humanPlayer; }
     public Player getCurrentOpponentPlayer() { return currentOpponentPlayer; } // Getter for the current opponent
+    public String getServerAddress() { return serverAddress; }
+    public int getServerPort() { return serverPort; }
 }

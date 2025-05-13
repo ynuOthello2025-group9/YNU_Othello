@@ -316,13 +316,13 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         panel4_player.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
 
         gamescreen_label_playername = new JLabel("Player 1");
-        gamescreen_label_playername.setFont(new Font("Arial", Font.PLAIN, 30));
+        gamescreen_label_playername.setFont(new Font("MS Gothic", Font.PLAIN, 25));
         gamescreen_label_playername.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_playerpiece = new JLabel("黒");
-        gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.PLAIN, 30));
+        gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_playerpiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_playerpiececount = new JLabel(("piece: 0"));
-        gamescreen_label_playerpiececount.setFont(new Font("Arial", Font.PLAIN, 30));
+        gamescreen_label_playerpiececount = new JLabel(("0枚"));
+        gamescreen_label_playerpiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_playerpiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panel4_player.add(gamescreen_label_playername);
@@ -340,14 +340,14 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         panel4_opp.setLayout(new BoxLayout(panel4_opp, BoxLayout.Y_AXIS));
         panel4_opp.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
 
-        gamescreen_label_oppname = new JLabel("Player 1");
-        gamescreen_label_oppname.setFont(new Font("Arial", Font.PLAIN, 30));
+        gamescreen_label_oppname = new JLabel("Player 2");
+        gamescreen_label_oppname.setFont(new Font("MS Gothic", Font.PLAIN, 25));
         gamescreen_label_oppname.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_opppiece = new JLabel("黒");
-        gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.PLAIN, 30));
+        gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_opppiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_opppiececount = new JLabel(("piece: 0"));
-        gamescreen_label_opppiececount.setFont(new Font("Arial", Font.PLAIN, 30));
+        gamescreen_label_opppiececount = new JLabel(("0枚"));
+        gamescreen_label_opppiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_opppiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panel4_opp.add(gamescreen_label_oppname);
@@ -438,6 +438,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
                      if (boardCoords != null) {
                          // クライアントに対象のマス目 (row, col) を通知
                          client.handlePlayerMove(boardCoords.y, boardCoords.x); // row, col
+                         // handle change piece count
                      }
                 }
             }
@@ -484,38 +485,15 @@ public class View extends JFrame implements ActionListener { // クラス名をV
 
      /** ネットワーク接続情報入力ダイアログ (ScreenUpdaterから継承・引数playerNameを追加) */
      private void showNetworkDialog(String playerName) {
-         JTextField serverField = new JTextField("localhost", 15);
-         JTextField portField = new JTextField("10000", 5);
-
-         Object[] message = { "サーバーアドレス:", serverField, "ポート番号:", portField, "プレイヤー名:", playerName }; // playerNameを表示
-
-         int option = JOptionPane.showConfirmDialog(this, message, "ネットワーク対戦 接続設定", JOptionPane.OK_CANCEL_OPTION);
-         if (option == JOptionPane.OK_OPTION) {
-             String serverAddr = serverField.getText().trim();
-             int port;
-             try {
-                 port = Integer.parseInt(portField.getText().trim());
-                 if (port <= 0 || port > 65535) throw new NumberFormatException("ポート番号範囲外");
-             } catch (NumberFormatException ex) {
-                 JOptionPane.showMessageDialog(this, "ポート番号は 1～65535 の数字で入力してください。", "入力エラー", JOptionPane.WARNING_MESSAGE);
-                 // エラーが発生したらログイン画面に戻る
-                 cardLayout.show(cardPanel, LOGIN_SCREEN);
-                 return;
-             }
-
-             if (client != null) {
-                 // Client.startGame (ネットワークモード用) を呼び出す
-                 client.startGame(false, playerName, serverAddr, port); // isCpu=false
-             } else {
-                  System.err.println("Error: Client is null.");
-                  JOptionPane.showMessageDialog(this, "内部エラーが発生しました。", "エラー", JOptionPane.ERROR_MESSAGE);
-                  // エラーが発生したらログイン画面に戻る
-                  cardLayout.show(cardPanel, LOGIN_SCREEN);
-             }
-         } else {
-             // キャンセルされた場合、ログイン画面に戻る
-             cardLayout.show(cardPanel, LOGIN_SCREEN);
-         }
+        if (client != null) {
+            // Client.startGame (ネットワークモード用) を呼び出す
+            client.startGame(false, playerName, client.getServerAddress(), client.getServerPort()); // isCpu=false
+        } else {
+            System.err.println("Error: Client is null.");
+            JOptionPane.showMessageDialog(this, "内部エラーが発生しました。", "エラー", JOptionPane.ERROR_MESSAGE);
+            // エラーが発生したらログイン画面に戻る
+            cardLayout.show(cardPanel, LOGIN_SCREEN);
+        }
      }
 
     /** ゲーム画面表示 (ScreenUpdaterから継承・UIリセット含む) */
