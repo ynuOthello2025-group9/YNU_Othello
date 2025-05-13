@@ -25,6 +25,11 @@ public class CPU {
     // 事前計算する行の評価値
     private static final int[][] CELL_SCORE = new int[N_LINE][LINE_PATTERN];
 
+    //セルスコアを返すメソッド
+    public static int getCellScore(int line, int pattern) {
+        return CELL_SCORE[line][pattern];
+    }
+
     // コンストラクタ
     // CPUクラスインスタンス生成時に先手後手と強さを指定する。
     public CPU(String turn, String level) {
@@ -33,6 +38,20 @@ public class CPU {
         depthInit();
         evaluateInit();
         System.out.println("CPU: turn = " + turn + ", level = " + level + ", depth = " + depth);
+    }
+
+    //turnを取得するメソッド
+    public String getTurn() {
+        return turn;
+    }
+
+    // levelを取得するメソッド
+    public String getLevel() {
+        return level;
+    }
+    // depthを取得するメソッド
+    public int getDepth() {
+        return depth;
     }
 
     // 操作情報をクライアントに送信
