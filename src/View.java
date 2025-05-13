@@ -484,38 +484,15 @@ public class View extends JFrame implements ActionListener { // クラス名をV
 
      /** ネットワーク接続情報入力ダイアログ (ScreenUpdaterから継承・引数playerNameを追加) */
      private void showNetworkDialog(String playerName) {
-         JTextField serverField = new JTextField("localhost", 15);
-         JTextField portField = new JTextField("10000", 5);
-
-         Object[] message = { "サーバーアドレス:", serverField, "ポート番号:", portField, "プレイヤー名:", playerName }; // playerNameを表示
-
-         int option = JOptionPane.showConfirmDialog(this, message, "ネットワーク対戦 接続設定", JOptionPane.OK_CANCEL_OPTION);
-         if (option == JOptionPane.OK_OPTION) {
-             String serverAddr = serverField.getText().trim();
-             int port;
-             try {
-                 port = Integer.parseInt(portField.getText().trim());
-                 if (port <= 0 || port > 65535) throw new NumberFormatException("ポート番号範囲外");
-             } catch (NumberFormatException ex) {
-                 JOptionPane.showMessageDialog(this, "ポート番号は 1～65535 の数字で入力してください。", "入力エラー", JOptionPane.WARNING_MESSAGE);
-                 // エラーが発生したらログイン画面に戻る
-                 cardLayout.show(cardPanel, LOGIN_SCREEN);
-                 return;
-             }
-
-             if (client != null) {
-                 // Client.startGame (ネットワークモード用) を呼び出す
-                 client.startGame(false, playerName, serverAddr, port); // isCpu=false
-             } else {
-                  System.err.println("Error: Client is null.");
-                  JOptionPane.showMessageDialog(this, "内部エラーが発生しました。", "エラー", JOptionPane.ERROR_MESSAGE);
-                  // エラーが発生したらログイン画面に戻る
-                  cardLayout.show(cardPanel, LOGIN_SCREEN);
-             }
-         } else {
-             // キャンセルされた場合、ログイン画面に戻る
-             cardLayout.show(cardPanel, LOGIN_SCREEN);
-         }
+        if (client != null) {
+            // Client.startGame (ネットワークモード用) を呼び出す
+            client.startGame(false, playerName, client.getServerAddress(), client.getServerPort()); // isCpu=false
+        } else {
+            System.err.println("Error: Client is null.");
+            JOptionPane.showMessageDialog(this, "内部エラーが発生しました。", "エラー", JOptionPane.ERROR_MESSAGE);
+            // エラーが発生したらログイン画面に戻る
+            cardLayout.show(cardPanel, LOGIN_SCREEN);
+        }
      }
 
     /** ゲーム画面表示 (ScreenUpdaterから継承・UIリセット含む) */
