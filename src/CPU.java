@@ -85,23 +85,28 @@ public class CPU {
 
     // 事前計算
     private void evaluateInit() {
-        for (int line = 0; line < N_LINE; line++) {
-            for (int pattern = 0; pattern < LINE_PATTERN; pattern++) {
-                int score = 0;
-                int tempPattern = pattern;
-                for (int col = 0; col < 8; col++) {
-                    int state = tempPattern % 3; // 0:空, 1:黒, 2:白
-                    int cellIndex = line * 8 + col;
-                    if (state == 1)
-                        score += CELL_WEIGHT[cellIndex];
-                    else if (state == 2)
-                        score -= CELL_WEIGHT[cellIndex];
-                    tempPattern /= 3;
+    for (int line = 0; line < N_LINE; line++) {
+        for (int patternValue = 0; patternValue < LINE_PATTERN; patternValue++) {
+            int score = 0;
+            int tempPattern = patternValue; 
+            
+            for (int colOnBoard = 7; colOnBoard >= 0; colOnBoard--) {
+                int state = tempPattern % 3; // 現在の tempPattern の最下位桁の値
+                                             // この state は、盤面上の colOnBoard のマスの状態に対応する
+
+                int cellIndex = line * 8 + colOnBoard; // 盤面上のマスのインデックス
+
+                if (state == 1) { // 1:黒 (自石)
+                    score += CELL_WEIGHT[cellIndex];
+                } else if (state == 2) { // 2:白 (相手石)
+                    score -= CELL_WEIGHT[cellIndex];
                 }
-                CELL_SCORE[line][pattern] = score;
+                tempPattern /= 3; // 次の桁を処理するために右シフト
             }
+            CELL_SCORE[line][patternValue] = score;
         }
     }
+}
 
     // 評価メソッド
     private int evaluate(Integer[][] board) {
@@ -187,7 +192,8 @@ public class CPU {
                     tempBoard[i] = board[i].clone();
                 }
 
-                Othello.makeMove(tempBoard, move[0], move[1], turn);
+                String currentPlayerTurn = (color == 1) ? "Black" : "White";
+                Othello.makeMove(tempBoard, move[0], move[1], currentPlayerTurn);
                 // System.out.println(indent + "Trying move: [" + move[0] + ", " + move[1] + "]");
                 int score = -negaAlpha(tempBoard, depth - 1, -color, -beta, -alpha);
                 // System.out.println(indent + "Move: [" + move[0] + ", " + move[1] + "], Score: " + score + ", Alpha: "
