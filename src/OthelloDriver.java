@@ -1,8 +1,13 @@
 import java.util.Scanner;
 
 public class OthelloDriver {
+    public static final int SIZE = 8; // 盤面のサイズ
+    final static int EMPTY = 0; // 設置されていない
+    final static int BLACK = 1; // 黒の石が置かれている
+    final static int WHITE = 2; // 白の石が置かれている
+    final static int CANPLACE = 3; // 設置可能
+
     public static void main(String[] args) {
-        final int SIZE = 8;
         Integer[][] board = new Integer[SIZE][SIZE];
         Integer[][] validMoves = new Integer[SIZE][SIZE];
         String turn = "";
@@ -27,7 +32,6 @@ public class OthelloDriver {
             System.out.println("相手の手番: " + Othello.opponentTurn(turn));
             System.out.println("現在の石の数（相手）: " + Othello.numberOfStone(board, Othello.getStoneColor(Othello.opponentTurn(turn))));
             System.out.println("現在の石の数（自分）: " + Othello.numberOfStone(board, Othello.getStoneColor(turn)));
-            
 
             // 有効手があるかどうかチェック
             if (!Othello.hasValidMove(board, turn)) {
@@ -41,7 +45,6 @@ public class OthelloDriver {
                 }
                 continue;
             }
-
 
             // 入力受付
             int x = -1, y = -1;
@@ -75,23 +78,21 @@ public class OthelloDriver {
         // 結果表示
         printBoard(board);
         System.out.println("ゲーム終了");
+        System.out.println("現在の石の数（相手）: " + Othello.numberOfStone(board, Othello.getStoneColor(Othello.opponentTurn(turn))));
+        System.out.println("現在の石の数（自分）: " + Othello.numberOfStone(board, Othello.getStoneColor(turn)));
         String winner = Othello.judgeWinner(board);
         System.out.println("勝者: " + winner);
 
         scanner.close();
     }
 
-    //テスト用盤面表示メソッド
-    public static void printBoard(Integer[][] currentBoard){
-        final int EMPTY = 0; // 設置されていない
-        final int BLACK = 1; // 黒の石が置かれている
-        final int WHITE = 2; // 白の石が置かれている
-        final int CANPLACE = 3; // 設置可能
-        final int SIZE = 8; // 盤面のサイズ
+    // テスト用盤面表示メソッド
+    public static void printBoard(Integer[][] currentBoard) {
 
         // 盤面の表示
         System.out.print("  ");
-        for (int i = 0; i < SIZE; i++) System.out.print(i + " ");
+        for (int i = 0; i < SIZE; i++)
+            System.out.print(i + " ");
         System.out.println();
 
         for (int i = 0; i < SIZE; i++) {
@@ -103,7 +104,7 @@ public class OthelloDriver {
                     System.out.print("○" + " ");
                 } else if (currentBoard[i][j] == WHITE) {
                     System.out.print("●" + " ");
-                } else if(currentBoard[i][j] == EMPTY) {
+                } else if (currentBoard[i][j] == EMPTY) {
                     System.out.print(" " + " ");
                 } else {
                     System.out.print("?");
@@ -114,4 +115,3 @@ public class OthelloDriver {
         System.out.println();
     }
 }
-
