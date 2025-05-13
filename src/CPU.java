@@ -11,7 +11,7 @@ public class CPU {
     private static final int LINE_PATTERN = 6561; // 各行の可能なパターン数（3^8）
 
     // 各マスの評価値
-    private static final int[] CELL_WEIGHT = {
+    private static final int[] CELL_WEIGHT_256 = {
             2714, 147, 69, -18, -18, 69, 147, 2714,
             147, -577, -186, -153, -153, -186, -577, 147,
             69, -186, -379, -122, -122, -379, -186, 69,
@@ -20,6 +20,16 @@ public class CPU {
             69, -186, -379, -122, -122, -379, -186, 69,
             147, -577, -186, -153, -153, -186, -577, 147,
             2714, 147, 69, -18, -18, 69, 147, 2714
+    };
+    private static final int[] CELL_WEIGHT = {
+            30, -12, 0, -1, -1, 0, -12, 30,
+            -12, -15, -3, -3, -3, -3, -15, -12,
+            0, -3, 0, -1, -1, 0, -3, 0,
+            -1, -3, -1, -1, -1, -1, -3, -1,
+            -1, -3, -1, -1, -1, -1, -3, -1,
+            0, -3, 0, -1, -1, 0, -3, 0,
+            -12, -15, -3, -3, -3, -3, -15, -12,
+            30, -12, 0, -1, -1, 0, -12, 30
     };
 
     // 事前計算する行の評価値
@@ -38,20 +48,6 @@ public class CPU {
         depthInit();
         evaluateInit();
         System.out.println("CPU: turn = " + turn + ", level = " + level + ", depth = " + depth);
-    }
-
-    //turnを取得するメソッド
-    public String getTurn() {
-        return turn;
-    }
-
-    // levelを取得するメソッド
-    public String getLevel() {
-        return level;
-    }
-    // depthを取得するメソッド
-    public int getDepth() {
-        return depth;
     }
 
     // 操作情報をクライアントに送信
@@ -120,7 +116,8 @@ public class CPU {
                 }
                 res += CELL_SCORE[line][pattern];
             }
-            return res / SCALE;
+            //return res / SCALE; 256倍スコアを使う場合
+            return res;
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Error in evaluate: Array index out of bounds. " + e.getMessage());
             e.printStackTrace();
