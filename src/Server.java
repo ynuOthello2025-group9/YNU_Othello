@@ -108,11 +108,7 @@ public class Server {
 		}
 	}
 
-    public void receivePlayerName(String playerName){
-        // ★acceptClientメゾットで直接実装してみました。このメゾットいらないかも。
-    }
-
-    public void sendPlayerName(String playerName1, String playerName2){//★引数を2つにしました。
+    public void sendPlayerName(String playerName1, String playerName2){
         // プレイヤー0にプレイヤー1の名前を送信
         if (out[0] != null && online[0]) {
             out[0].println("OPPONENT:" + playerName2); // "OPPONENT:" をつけて明示
@@ -133,11 +129,7 @@ public class Server {
         }
     }
 
-    public void checkTimeout(){ //クライアント接続状態の確認
-        //★Receiverクラスで直接実装してみました。そっちの方が簡略化できそうだからこのメゾットいらないかも。
-	}
-
-    public void sendColor(String color1, String color2){//★引数を2つにしました。
+    public void sendColor(String color1, String color2){
         // プレイヤー0に自分の色を送信
         if (out[0] != null && online[0]) {
             out[0].println("YOUR COLOR:" + color1); // "YOUR COLOR:" をつけて明示
@@ -148,7 +140,7 @@ public class Server {
         }
     }
 
-    public void forwardMessage(String msg, Integer clientNo){//★転送データの型をStringにしてみました。
+    public void forwardMessage(String msg, Integer clientNo){
         int opponent = 1 - clientNo;
         if (out[opponent] != null && online[opponent]) {
             out[opponent].println(msg);
