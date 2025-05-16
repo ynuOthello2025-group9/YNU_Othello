@@ -614,10 +614,10 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         // ゲーム画面の表示を初期状態に戻す (ScreenUpdaterのresetGameUIに相当)
         if (gamescreen_label_playername != null) gamescreen_label_playername.setText("Player 1");
         if (gamescreen_label_playerpiece != null) gamescreen_label_playerpiece.setText("黒");
-        if (gamescreen_label_playerpiececount != null) gamescreen_label_playerpiececount.setText("piece: 0");
+        if (gamescreen_label_playerpiececount != null) gamescreen_label_playerpiececount.setText("0枚");
         if (gamescreen_label_oppname != null) gamescreen_label_oppname.setText("Player 1");
         if (gamescreen_label_opppiece != null) gamescreen_label_opppiece.setText("黒");
-        if (gamescreen_label_opppiececount != null) gamescreen_label_opppiececount.setText("piece: 0");
+        if (gamescreen_label_opppiececount != null) gamescreen_label_opppiececount.setText("0枚");
         if (gamescreen_label_turnplayer != null) gamescreen_label_turnplayer.setText("ゲーム待機中..."); // 初期表示に戻す
         if (gamescreen_button_surrender != null) gamescreen_button_surrender.setEnabled(false); // 退出ボタン無効化
         if (passButton != null) {
