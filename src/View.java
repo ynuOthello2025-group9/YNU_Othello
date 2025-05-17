@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.Point;
 
 public class View extends JFrame implements ActionListener { // クラス名をViewに変更
 
@@ -19,6 +18,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     private static final int EMPTY = 0;
     private static final int BLACK = 1;
     private static final int WHITE = 2;
+    private static final int CANPLACE = 3;
 
     // --- コンポーネント ---
     private JPanel cardPanel;
@@ -315,13 +315,13 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         panel4_player.setLayout(new BoxLayout(panel4_player, BoxLayout.Y_AXIS));
         panel4_player.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
 
-        gamescreen_label_playername = new JLabel("Player 1");
+        gamescreen_label_playername = new JLabel("Player");
         gamescreen_label_playername.setFont(new Font("MS Gothic", Font.PLAIN, 25));
         gamescreen_label_playername.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_playerpiece = new JLabel("黒");
         gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_playerpiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_playerpiececount = new JLabel(("0枚"));
+        gamescreen_label_playerpiececount = new JLabel(("2枚"));
         gamescreen_label_playerpiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_playerpiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -340,13 +340,13 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         panel4_opp.setLayout(new BoxLayout(panel4_opp, BoxLayout.Y_AXIS));
         panel4_opp.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
 
-        gamescreen_label_oppname = new JLabel("Player 2");
+        gamescreen_label_oppname = new JLabel("対戦相手を待っています");
         gamescreen_label_oppname.setFont(new Font("MS Gothic", Font.PLAIN, 25));
         gamescreen_label_oppname.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_opppiece = new JLabel("黒");
         gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_opppiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_opppiececount = new JLabel(("0枚"));
+        gamescreen_label_opppiececount = new JLabel(("2枚"));
         gamescreen_label_opppiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_opppiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -612,12 +612,12 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         cardLayout.show(cardPanel, MENU_SCREEN);
         setTitle("オセロゲーム"); // タイトルリセット
         // ゲーム画面の表示を初期状態に戻す (ScreenUpdaterのresetGameUIに相当)
-        if (gamescreen_label_playername != null) gamescreen_label_playername.setText("Player 1");
-        if (gamescreen_label_playerpiece != null) gamescreen_label_playerpiece.setText("黒");
-        if (gamescreen_label_playerpiececount != null) gamescreen_label_playerpiececount.setText("0枚");
-        if (gamescreen_label_oppname != null) gamescreen_label_oppname.setText("Player 1");
-        if (gamescreen_label_opppiece != null) gamescreen_label_opppiece.setText("黒");
-        if (gamescreen_label_opppiececount != null) gamescreen_label_opppiececount.setText("0枚");
+        if (gamescreen_label_playername != null) gamescreen_label_playername.setText("Player");
+        if (gamescreen_label_playerpiece != null) gamescreen_label_playerpiece.setText("?");
+        if (gamescreen_label_playerpiececount != null) gamescreen_label_playerpiececount.setText("2枚");
+        if (gamescreen_label_oppname != null) gamescreen_label_oppname.setText("対戦相手を待っています");
+        if (gamescreen_label_opppiece != null) gamescreen_label_opppiece.setText("?");
+        if (gamescreen_label_opppiececount != null) gamescreen_label_opppiececount.setText("2枚");
         if (gamescreen_label_turnplayer != null) gamescreen_label_turnplayer.setText("ゲーム待機中..."); // 初期表示に戻す
         if (gamescreen_button_surrender != null) gamescreen_button_surrender.setEnabled(false); // 退出ボタン無効化
         if (passButton != null) {
@@ -708,6 +708,16 @@ public class View extends JFrame implements ActionListener { // クラス名をV
                                 drawPiece(g, startX, startY, cellWidth, cellHeight, i, j, Color.BLACK);
                             } else if (boardState[i][j] == WHITE) {
                                 drawPiece(g, startX, startY, cellWidth, cellHeight, i, j, Color.WHITE);
+                            }else if (boardState[i][j] == CANPLACE) {
+                                // CANPLACEなマスの場合、縁だけの黒い円を描画
+                                int pieceMargin = Math.min(cellWidth, cellHeight) / 8;
+                                int pieceDiameter = Math.min(cellWidth, cellHeight) - 2 * pieceMargin;
+                                int x = startX + j * cellWidth + pieceMargin;
+                                int y = startY + i * cellHeight + pieceMargin;
+
+                                g.setColor(Color.BLACK); // 黒色で描画
+                                // 縁だけの円を描画 (drawOval を使用)
+                                g.drawOval(x, y, pieceDiameter, pieceDiameter);
                             }
                         }
                     }
