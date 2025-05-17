@@ -210,9 +210,9 @@ public class Othello {
     public static void makeMove(Integer[][] tempBoard, int x, int y, String turn) {
 
         // まず置く場所に石を置く
-        if (turn == "Black") {
+        if ("Black".equals(turn)) {
             tempBoard[x][y] = BLACK;
-        } else if (turn == "White") {
+        } else if ("White".equals(turn)) {
             tempBoard[x][y] = WHITE;
         }
 
