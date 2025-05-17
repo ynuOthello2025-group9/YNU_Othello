@@ -15,6 +15,7 @@ public class Client {
     private static final int EMPTY = 0;
     private static final int BLACK = 1;
     private static final int WHITE = 2;
+    private static final int CANPLACE = 3;
     private static final long HEARTBEAT_INTERVAL_SECONDS = 10;
 
     // --- UI ---
@@ -550,6 +551,13 @@ public class Client {
                             Othello.makeMove(boardState, r, c, toOthelloColor(opponentActualColor));
                             updateBoardAndUI(null);
                             updateStatusAndUI(this.currentTurn, opponentName + " ("+opponentActualColor+") が ("+ r + "," + c + ") に置きました。", opponentName);
+                            if(humanPlayer.getOpponentColor().equals("黒")){
+                                View.updateOpponentPieceCount(Othello.numberOfStone(boardState,BLACK));
+                                View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE));
+                            }else{
+                                View.updateOpponentPieceCount(Othello.numberOfStone(boardState,WHITE));
+                                View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK)); 
+                            }
 
                             this.opponentPlayedMoveLast = true; // 相手が手を打った
                             this.humanPlayedMoveLast = true; // 自分が直前にパスしたわけではない

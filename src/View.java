@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.Point;
 
 public class View extends JFrame implements ActionListener { // クラス名をViewに変更
 
@@ -19,6 +18,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     private static final int EMPTY = 0;
     private static final int BLACK = 1;
     private static final int WHITE = 2;
+    private static final int CANPLACE = 3;
 
     // --- コンポーネント ---
     private JPanel cardPanel;
@@ -321,7 +321,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_playerpiece = new JLabel("黒");
         gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_playerpiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_playerpiececount = new JLabel(("0枚"));
+        gamescreen_label_playerpiececount = new JLabel(("2枚"));
         gamescreen_label_playerpiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_playerpiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -346,7 +346,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_opppiece = new JLabel("黒");
         gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_opppiece.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_opppiececount = new JLabel(("0枚"));
+        gamescreen_label_opppiececount = new JLabel(("2枚"));
         gamescreen_label_opppiececount.setFont(new Font("MS Gothic", Font.PLAIN, 30));
         gamescreen_label_opppiececount.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -708,6 +708,16 @@ public class View extends JFrame implements ActionListener { // クラス名をV
                                 drawPiece(g, startX, startY, cellWidth, cellHeight, i, j, Color.BLACK);
                             } else if (boardState[i][j] == WHITE) {
                                 drawPiece(g, startX, startY, cellWidth, cellHeight, i, j, Color.WHITE);
+                            }else if (boardState[i][j] == CANPLACE) {
+                                // CANPLACEなマスの場合、縁だけの黒い円を描画
+                                int pieceMargin = Math.min(cellWidth, cellHeight) / 8;
+                                int pieceDiameter = Math.min(cellWidth, cellHeight) - 2 * pieceMargin;
+                                int x = startX + j * cellWidth + pieceMargin;
+                                int y = startY + i * cellHeight + pieceMargin;
+
+                                g.setColor(Color.BLACK); // 黒色で描画
+                                // 縁だけの円を描画 (drawOval を使用)
+                                g.drawOval(x, y, pieceDiameter, pieceDiameter);
                             }
                         }
                     }
