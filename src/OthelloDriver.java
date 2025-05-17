@@ -13,6 +13,8 @@ public class OthelloDriver {
         String turn = "";
         Scanner scanner = new Scanner(System.in);
 
+        System.out.println("Othelloクラスのテスト(OthelloDriver.java)");
+
         // 盤面の初期化
         Othello.initBoard(board);
         // プレイヤーの初期化
@@ -88,6 +90,8 @@ public class OthelloDriver {
 
     // テスト用盤面表示メソッド
     public static void printBoard(Integer[][] currentBoard) {
+
+        System.out.println("現在の盤面:");
 
         // 盤面の表示
         System.out.print("  ");
