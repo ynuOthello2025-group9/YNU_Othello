@@ -80,27 +80,22 @@ public class Client {
 
     // --- 有効手を CANPLACE=3 で埋め込んで描画 ---
     private void refreshBoardUI() {
-        // 1) 元の盤面をコピー
+        // 1) 盤面コピー＋マーク埋め込み
         Integer[][] boardCopy = copyBoard(this.boardState);
 
-        // 2) 自分のターンのときだけマークを埋め込む
         if (gameActive
             && currentTurn != null
             && currentTurn.equals(humanPlayer.getStoneColor())) {
-
-            // 2-a) 有効手マップ取得 (CANPLACE=3 の箇所だけ 3 が入った int[][])
-            Integer[][] validMap = Othello.getValidMovesBoard(
-                boardCopy,
-                toOthelloColor(currentTurn)
-            );
-
-            // 2-b) 元盤面 + マークを合成して表示用盤面を作成
+            Integer[][] validMap = Othello.getValidMovesBoard(boardCopy, toOthelloColor(currentTurn));
             boardCopy = Othello.getBoard(boardCopy, validMap);
         }
 
         // 3) 描画
         final Integer[][] displayBoard = boardCopy;
         SwingUtilities.invokeLater(() -> View.updateBoard(displayBoard));
+        
+        // 3) 石数更新
+        updatePieceCountsUI();
     }
 
 
@@ -111,6 +106,22 @@ public class Client {
             View.updateStatus(turn, message, dispOpp)
         );
     }
+
+    /**
+     * boardState を読んで現在の黒石・白石数を数え、
+     * humanPlayer/opponent に応じて View.updatePlayerPieceCount(...)
+     * と View.updateOpponentPieceCount(...) を呼ぶ
+     */
+    private void updatePieceCountsUI() {
+        if(humanPlayer.getOpponentColor().equals("黒")){
+            View.updateOpponentPieceCount(Othello.numberOfStone(boardState,BLACK));
+            View.updatePlayerPieceCount(Othello.numberOfStone(boardState,WHITE));
+        }else{
+            View.updateOpponentPieceCount(Othello.numberOfStone(boardState,WHITE));
+            View.updatePlayerPieceCount(Othello.numberOfStone(boardState,BLACK)); 
+        }
+    }
+
 
     // --- ターンメッセージ ---
     private String getTurnMessage() {
