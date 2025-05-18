@@ -185,6 +185,7 @@ public class CPU {
     color: 現在の手番プレイヤーを示す符号(1: 黒, -1: 白)
     alpha: 現在の探索窓の下限値。このプレイヤーが保証できる最低スコア。
     beta: 現在の探索窓の上限値。相手プレイヤーが許容する最高スコア。
+          相手が最善手を指すと仮定しているため、これ以上のスコアは得られない。
     return: この局面から探索した結果、現在のプレイヤーが得られる最善の評価値。
      */
     private int negaAlpha(Integer[][] board, int depth, int color, int alpha, int beta) {
@@ -234,8 +235,8 @@ public class CPU {
                 alpha = Math.max(alpha, score);
 
                 // beta枝狩り
-                  // alphaがbeta(相手が許容するスコア)以上になった場合、現ノードの親ノードでは
-                  // 相手始点でより良い手(現在プレイヤーに不利な手)が既に見つかっているため、探索をやめる。
+                  // alphaがbeta(相手が許容するスコア)以上になった場合、これ以上の探索をしても
+                  // beta以下のスコアに抑えられるため、探索をやめる。
                 if (alpha >= beta) {
                     break; // ループを抜け、枝狩りを行う
                 }
@@ -261,37 +262,44 @@ public class CPU {
         }
     }
 
-    // 完全探索用のNegaAlphaメソッド
+    /*  
+    完全探索用のNegaAlphaメソッド
+    基本はnegaAlpha()と同じだが、depthの制限なく、対局終了まで探索する。
+    勝利を最優先とするため、勝利する打ち方を見つけた場合、WIN_SCORE=10000が加算される。
+    次に石差を考慮したスコアを返す。
+    evaluate()による静的評価は用いない。
+    */
     private int perfectSearch(Integer[][] board, int color, int alpha, int beta) {
         String currentTurn = (color == 1) ? "Black" : "White";
 
-        // 終端条件: ゲーム終了
+        // 対局が終了しているか判定
         if (isGameOver(board, currentTurn)) {
             int blackStones = countPlayerStones(board, "Black");
             int whiteStones = countPlayerStones(board, "White");
             int stoneDifference = blackStones - whiteStones; // 黒から見た石差
 
-            // color の視点での勝敗と石差を評価値とする
-            if (color == 1) { // 黒 (CPU) の手番の視点
+            // 現在のプレイヤー視点での勝敗と石差を評価値とする
+            if (color == 1) { // 現在の視点が黒
                 if (stoneDifference > 0) { // 黒の勝ち
                     return WIN_SCORE + stoneDifference;
-                } else if (stoneDifference < 0) { // 黒の負け (白の勝ち)
-                    return -WIN_SCORE + stoneDifference; // stoneDifferenceは負なので、より負の大きな値になる
+                } else if (stoneDifference < 0) { // 黒の負け
+                    return -WIN_SCORE + stoneDifference; // (stoneDifferenceは負になる)
                 } else { // 引き分け
-                    return DRAW_SCORE;
+                    return DRAW_SCORE; // = 0
                 }
-            } else { // 白 (相手) の手番の視点 (color == -1)
-                if (stoneDifference < 0) { // 白の勝ち (黒の負け)
+            } else { // 現在の視点が白
+                if (stoneDifference < 0) { // 白の勝ち
                     // 白から見た石差は (-stoneDifference)
                     return WIN_SCORE + (-stoneDifference);
-                } else if (stoneDifference > 0) { // 白の負け (黒の勝ち)
+                } else if (stoneDifference > 0) { // 白の負け
                     return -WIN_SCORE + (-stoneDifference); // (-stoneDifference)は負
                 } else { // 引き分け
-                    return DRAW_SCORE;
+                    return DRAW_SCORE; // = 0
                 }
             }
         }
 
+        // 以下はnegaAlphaと同様
         ArrayList<int[]> possibleMoves = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
