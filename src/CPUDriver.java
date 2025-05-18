@@ -24,12 +24,13 @@ public class CPUDriver {
 
         String testLevel;
         while (true) {
-            System.out.print("CPUの強さを選択してください (弱い/普通/強い): ");
+            System.out.println("強さを表すStringは実際は日本語ですが、簡単のため英語を使用します");
+            System.out.print("CPUの強さを選択してください (easy/normal/hard): ");
             testLevel = scanner.nextLine();
-            if ("弱い".equals(testLevel) || "普通".equals(testLevel) || "強い".equals(testLevel)) {
+            if ("easy".equals(testLevel) || "normal".equals(testLevel) || "hard".equals(testLevel)) {
                 break;
             }
-            System.out.println("無効な入力です。'弱い', '普通', '強い' のいずれかを入力してください。");
+            System.out.println("無効な入力です。'easy', 'normal', 'hard' のいずれかを入力してください。");
         }
 
         System.out.println("以下の内容でCPUが作成されました: ");
