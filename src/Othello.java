@@ -39,9 +39,9 @@ public class Othello {
 
     // 相手の手番情報取得メソッド（テスト用）
     public static String opponentTurn(String turn) {
-        if (turn == "Black") {
+        if (turn.equals("Black")) {
             return "White";
-        } else if (turn == "White") {
+        } else if (turn.equals("White")) {
             return "Black";
         } else {
             return "error";
@@ -50,9 +50,9 @@ public class Othello {
 
     // 手番交換メソッド（テスト用）
     public static String changeTurn(String turn) {
-        if (turn == "Black") {
+        if (turn.equals("Black")) {
             turn = "White";
-        } else if (turn == "White") {
+        } else if (turn.equals("White")) {
             turn = "Black";
         }
 
