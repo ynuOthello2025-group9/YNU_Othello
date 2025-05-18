@@ -1,72 +1,72 @@
 import java.util.Scanner;
-
 public class CPUDriver {
     private static final int N_LINE = 8;
     public static void main(String[] args) {
+        /*CPU cpu = new CPU("Black", "普通");
+        Integer[][] board = new Integer[N_LINE][N_LINE];
+        Othello.initBoard(board); // 初期配置
+        int[] move = cpu.getCPUOperation(board);
+        System.out.println("CPUの選択した手: [" + move[0] + ", " + move[1] + "]");*/
 
+        
         //テスト用盤面(初期配置)
-        Integer[][] testboard = new Integer[N_LINE][N_LINE];
-        Othello.initBoard(testboard);
+        Integer[][] testBoard = new Integer[N_LINE][N_LINE];
+        Othello.initBoard(testBoard);
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("CPUクラスのテスト開始");
+        System.out.println("\nCPUクラスのテスト開始");
         
         // 1. 初期化テスト
-        String testTurn;
-        while (true) {
-            System.out.print("CPUの手番を選択してください (Black/White): ");
-            testTurn = scanner.nextLine();
-            if ("Black".equals(testTurn) || "White".equals(testTurn)) {
-                break;
-            }
-            System.out.println("無効な入力です。'Black' または 'White' を入力してください。");
-        }
+        System.out.println("\n1. CPUクラスの初期化テスト");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("手番を入力してください (1: Black, 2: White)");
+        int turnNum = scanner.nextInt();
 
-        String testLevel;
-        while (true) {
-            System.out.println("強さを表すStringは実際は日本語ですが、簡単のため英語を使用します");
-            System.out.print("CPUの強さを選択してください (easy/normal/hard): ");
-            testLevel = scanner.nextLine();
-            if ("easy".equals(testLevel) || "normal".equals(testLevel) || "hard".equals(testLevel)) {
-                break;
-            }
-            System.out.println("無効な入力です。'easy', 'normal', 'hard' のいずれかを入力してください。");
-        }
+        System.out.println("CPUの強さを入力してください (0: 弱い, 1: 普通, 2: 強い)");
+        int levelNum = scanner.nextInt();
 
         System.out.println("以下の内容でCPUが作成されました: ");
+        CPU testCPU = null;
+        if(turnNum == 1 && levelNum == 0) {
+            testCPU = new CPU("Black", "弱い");
+        } else if(turnNum == 1 && levelNum == 1) {
+            testCPU = new CPU("Black", "普通");
+        } else if(turnNum == 1 && levelNum == 2) {
+            testCPU = new CPU("Black", "強い");
+        } else if(turnNum == 2 && levelNum == 0) {
+            testCPU = new CPU("White", "弱い");
+        } else if(turnNum == 2 && levelNum == 1) {
+            testCPU = new CPU("White", "普通");
+        } else if(turnNum == 2 && levelNum == 2) {
+            testCPU = new CPU("White", "強い");
+        } else {
+            testCPU = new CPU("Black", "普通");
+        }
         // インスタンス作成時にログ出力があるので、それで確認することとする。
-        CPU testCPU = new CPU(testTurn, testLevel);
-
-        
+        scanner.close();
 
         // 2. 操作決定のテスト
+        System.out.println("\n2. CPUクラスの操作決定テスト");
         System.out.println("操作前の盤面(初期配置)");
-        printBoard(testboard);
+        printBoard(testBoard);
 
-        long startTime = System.currentTimeMillis();
-        int[] cpuMove = testCPU.getCPUOperation(testboard);
-        long endTime = System.currentTimeMillis();
-        System.out.println("CPUの思考時間: " + (endTime - startTime) + "ms");
+        Integer[][] cpuBoard = new Integer[N_LINE][N_LINE];
+        for (int i = 0; i < N_LINE; i++) {
+            cpuBoard[i] = testBoard[i].clone();
+        }
+        int[] cpuMove = testCPU.getCPUOperation(testBoard);
 
         if (cpuMove == null || cpuMove[0] == -1) {
             System.out.println("CPUはパスしました。");
-            System.out.println("操作後の盤面");
-            printBoard(testboard);
+            System.out.println("\n操作後の盤面");
+            printBoard(testBoard);
         } else {
             System.out.println("CPUの選択: (" + cpuMove[0] + ", " + cpuMove[1] + ")");
-
-            // CPUが指した手が合法かどうかのチェック
-            if (Othello.isValidMove(testboard, cpuMove[0], cpuMove[1], testTurn)) {
-                Othello.makeMove(testboard, cpuMove[0], cpuMove[1], testTurn);
-                System.out.println("CPUが打った後の盤面");
-                printBoard(testboard);
-            } else {
-                System.out.println("エラー: CPUが無効な手を指しました。(" + cpuMove[0] + ", " + cpuMove[1] + ")");
-            }
+            Othello.makeMove(testBoard, cpuMove[0], cpuMove[1], (turnNum == 1) ? "Black" : "White");
+            System.out.println("\n操作後の盤面");
+            printBoard(testBoard);
         }
 
         System.out.println("\nCPUクラスのテストを終了します。");
-        scanner.close();
         
         
     }
@@ -89,7 +89,7 @@ public class CPUDriver {
             }
             System.out.println();
         }
-        System.out.println("------------------");
+        System.out.println("------------------\n");
     }
         
 }
