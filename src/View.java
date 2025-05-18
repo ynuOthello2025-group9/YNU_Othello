@@ -59,7 +59,6 @@ public class View extends JFrame implements ActionListener { // クラス名をV
     private JLabel gamescreen_label_opppiececount;
     private JLabel gamescreen_label_turnplayer;
     private JButton gamescreen_button_surrender; // UI.javaから追加
-    private JButton passButton; // ScreenUpdaterから継承
 
 
     // --- 状態 ---
@@ -373,20 +372,6 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_turnplayer.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_turnplayer.setFont(new Font("MS Gothic", Font.PLAIN, 30));
 
-        passButton = new JButton("パス"); // ScreenUpdaterから継承
-        passButton.setToolTipText("あなたの番で、置ける場所がない場合に押せます (ネットワーク対戦時)");
-        passButton.setEnabled(false); // 初期状態は無効
-        // ActionListenerをここで設定
-        passButton.addActionListener(e -> {
-            if (client != null && client.isNetworkMatch()) { // Clientに isNetworkMatch が必要
-                // 自分のターンかどうかのチェックは Client 側でも行う想定
-                client.sendPassToServer(); // Clientに sendPassToServer が必要
-            } else if (client != null && !client.isNetworkMatch()){
-                 JOptionPane.showMessageDialog(this, "CPU対戦ではパスは自動で行われます。", "情報", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-        passButton.setVisible(false); // CPU対戦時は非表示にするため初期は非表示
-
         gamescreen_button_surrender = new JButton("退出"); // UI.javaから追加
         gamescreen_button_surrender.setPreferredSize(new Dimension(80, 80));
         gamescreen_button_surrender.setFont(new Font("MS Gothic", Font.BOLD, 20));
@@ -408,7 +393,6 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         // レイアウト調整：手番表示とボタン
         JPanel turnAndButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // 間隔調整
         turnAndButtonsPanel.add(gamescreen_label_turnplayer);
-        turnAndButtonsPanel.add(passButton); // パスボタンを追加
         turnAndButtonsPanel.add(gamescreen_button_surrender); // 退出ボタンを追加
 
         panel4_bottom.add(turnAndButtonsPanel);
@@ -502,11 +486,6 @@ public class View extends JFrame implements ActionListener { // クラス名をV
             cardLayout.show(cardPanel, GAME_SCREEN);
             // ゲーム画面表示時に有効化/無効化するボタンを設定
             if (gamescreen_button_surrender != null) gamescreen_button_surrender.setEnabled(true); // 退出ボタンは有効
-            if (passButton != null) {
-                passButton.setEnabled(false); // パスボタンはターンが来てから判断
-                 // ネットワーク対戦かどうかで表示/非表示を切り替える必要があるが、
-                 // updateStatusでClientの状態を見て制御するのが自然
-            }
              // updateStatusが呼ばれるまで各種ラベルはデフォルト値のまま
         });
     }
@@ -620,10 +599,6 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         if (gamescreen_label_opppiececount != null) gamescreen_label_opppiececount.setText("2枚");
         if (gamescreen_label_turnplayer != null) gamescreen_label_turnplayer.setText("ゲーム待機中..."); // 初期表示に戻す
         if (gamescreen_button_surrender != null) gamescreen_button_surrender.setEnabled(false); // 退出ボタン無効化
-        if (passButton != null) {
-            passButton.setEnabled(false); // パスボタン無効化
-            passButton.setVisible(false); // パスボタン非表示化
-        }
 
         // CPU設定画面の決定ボタンを有効化 (UI.javaのshowMainScreenに合わせる)
         // ゲーム開始後に無効化される想定だが、メニューに戻ったら再度有効化
