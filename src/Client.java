@@ -96,6 +96,27 @@ public class Client {
         
         // 3) 石数更新
         updatePieceCountsUI();
+        // 4) 置ける手がないかチェックし、必要なら自動パス
+        humanAutoPass();
+    }
+    /** ヒューマンの手番で合法手ゼロなら自動的にパスする */
+    private void humanAutoPass() {
+        if (!gameActive || currentTurn == null) return;
+
+        // 自分の番でなければ終了
+        if (!currentTurn.equals(humanPlayer.getStoneColor())) return;
+
+        // 置ける場所が 1 つでもあれば終了
+        if (Othello.hasValidMove(boardState, toOthelloColor(currentTurn))) return;
+
+        // ---------- 自動パス ----------
+        if (isNetworkMatch) {
+            // 既存ロジックを流用
+            sendPassToServer();
+        } else {
+            // CPU 戦は既存 passCpu() をそのまま使える
+            passCpu();
+        }
     }
 
 
@@ -451,8 +472,6 @@ public class Client {
                 // 表示上ターン切り替え
                 currentTurn = currentOpponentPlayer.getStoneColor();
                 refreshBoardUI();
-                updateStatusAndUI(currentTurn,
-                    getTurnMessage(), opponentName);
             } else {
                 updateStatusAndUI(currentTurn,
                     "パスできません。", opponentName);
