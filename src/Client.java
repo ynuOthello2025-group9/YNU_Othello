@@ -294,7 +294,7 @@ public class Client {
                 // (1) 石を置く
                 Othello.makeMove(boardState,
                     mv[0], mv[1],
-                    toOthelloColor(currentTurn));
+                    toOthelloColor(currentOpponentPlayer.getStoneColor()));
                 // (2) ターン切り替え
                 currentTurn = currentTurn.equals("黒") ? "白" : "黒";
                 // (3) UI
