@@ -4,11 +4,11 @@ public class CPU {
     private String turn; // (Black(先手) or White(後手))
     private String level; // (弱い or 普通 or 強い)
     private int depth; // 探索の深さ. 強さによって決定
+    private int threshold; // 完全探索に移行する空きマスの閾値
 
     // 定数
     private static final int N_LINE = 8; // 行数
-    private static final int LINE_PATTERN = 6561; // 各行の可能なパターン数（3^8）
-    private static final int EMPTY_THRESHOLD = 10; // 完全探索に切り替える残り手数
+    private static final int LINE_PATTERN = 6561; // 各行の可能なパターン数（3^8)
     private static final int WIN_SCORE = 100000; // 勝ちの基本スコア
     private static final int DRAW_SCORE = 0;     // 引き分けのスコア
 
@@ -32,8 +32,10 @@ public class CPU {
         this.turn = turn;
         this.level = level;
         depthInit(); // 探索深さの初期化
+        thresholdInit();
         evaluateInit(); // スコアの事前計算
-        System.out.println("CPU: turn = " + turn + ", level = " + level + ", depth = " + depth); // ログ出力
+        System.out.println("CPU: turn = " + turn + ", level = " + level + 
+            ", depth = " + depth + ", threshold = " + threshold); // ログ出力
     }
 
     // depthの初期化
@@ -43,13 +45,31 @@ public class CPU {
                 this.depth = 1;
                 break;
             case "普通":
-                this.depth = 3;
+                this.depth = 4;
                 break;
             case "強い":
-                this.depth = 5;
+                this.depth = 6;
                 break;
             default:
-                this.depth = 3;
+                this.depth = 4;
+                break;
+        }
+    }
+
+    // thresholdの初期化
+    private void thresholdInit() {
+        switch (level) {
+            case "弱い":
+                this.threshold = 0;
+                break;
+            case "普通":
+                this.threshold = 8;
+                break;
+            case "強い":
+                this.threshold = 12;
+                break;
+            default:
+                this.threshold = 8;
                 break;
         }
     }
@@ -138,7 +158,7 @@ public class CPU {
             int color = "Black".equals(turn) ? 1 : -1; // NegaAlpha探索で用いる手番
 
             int emptySquares = countEmptySquares(board); // 空きマス数
-            boolean usePerfectSearch = (emptySquares <= EMPTY_THRESHOLD); // 完全探索を行うか否か
+            boolean usePerfectSearch = (emptySquares <= this.threshold); // 完全探索を行うか否か
 
             // 各合法手についてスコアを計算
             for (int[] move : possibleMoves) {
