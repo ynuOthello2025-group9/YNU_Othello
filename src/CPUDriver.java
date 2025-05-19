@@ -2,13 +2,6 @@ import java.util.Scanner;
 public class CPUDriver {
     private static final int N_LINE = 8;
     public static void main(String[] args) {
-        /*CPU cpu = new CPU("Black", "普通");
-        Integer[][] board = new Integer[N_LINE][N_LINE];
-        Othello.initBoard(board); // 初期配置
-        int[] move = cpu.getCPUOperation(board);
-        System.out.println("CPUの選択した手: [" + move[0] + ", " + move[1] + "]");*/
-
-        
         //テスト用盤面(初期配置)
         Integer[][] testBoard = new Integer[N_LINE][N_LINE];
         Othello.initBoard(testBoard);
@@ -67,8 +60,6 @@ public class CPUDriver {
         }
 
         System.out.println("\nCPUクラスのテストを終了します。");
-        
-        
     }
 
     private static void printBoard(Integer[][] board) {
@@ -90,6 +81,5 @@ public class CPUDriver {
             System.out.println();
         }
         System.out.println("------------------\n");
-    }
-        
+    } 
 }
