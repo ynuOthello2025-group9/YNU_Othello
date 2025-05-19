@@ -92,7 +92,6 @@ public class View extends JFrame implements ActionListener { // クラス名をV
 
         // サイズ設定はUI.javaに合わせるか、適切なサイズに調整
         setSize(1000, 650); // UI.javaから
-        setResizable(false); // サイズ変更不可
         setMinimumSize(new Dimension(450, 550)); // ScreenUpdaterから (最小サイズ)
         setLocationRelativeTo(null); // 中央に表示 (ScreenUpdaterから)
 
