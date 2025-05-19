@@ -230,9 +230,9 @@ public class Client {
             toOthelloColor(currentTurn));
 
         // (3) ターン切り替え
-        currentTurn = currentTurn.equals("黒") ? "白" : "黒";
+        currentTurn = humanPlayer.getOpponentColor();
 
-        // (4) UI 更新
+        // (4) UI 更新C
         refreshBoardUI();
         updateStatusAndUI(currentTurn,
             humanPlayer.getPlayerName()
@@ -296,7 +296,7 @@ public class Client {
                     mv[0], mv[1],
                     toOthelloColor(currentOpponentPlayer.getStoneColor()));
                 // (2) ターン切り替え
-                currentTurn = currentTurn.equals("黒") ? "白" : "黒";
+                currentTurn = humanPlayer.getStoneColor();
                 // (3) UI
                 refreshBoardUI();
                 updateStatusAndUI(currentTurn,
@@ -307,6 +307,8 @@ public class Client {
                     && currentTurn.equals(
                         humanPlayer.getStoneColor())) {
                     /* 人間番 */
+                    refreshBoardUI();
+                    updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
                 } else {
                     startCpuTurn();
                 }
