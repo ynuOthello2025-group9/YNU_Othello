@@ -309,8 +309,6 @@ public class Client {
                     /* 人間番 */
                     refreshBoardUI();
                     updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
-                } else {
-                    startCpuTurn();
                 }
             }
         });
