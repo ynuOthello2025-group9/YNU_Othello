@@ -317,7 +317,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_playername = new JLabel("Player");
         gamescreen_label_playername.setFont(new Font("MS Gothic", Font.PLAIN, 25));
         gamescreen_label_playername.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_playerpiece = new JLabel("黒");
+        gamescreen_label_playerpiece = new JLabel("?");
         gamescreen_label_playerpiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_playerpiece.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_playerpiececount = new JLabel(("2枚"));
@@ -342,7 +342,7 @@ public class View extends JFrame implements ActionListener { // クラス名をV
         gamescreen_label_oppname = new JLabel("対戦相手を待っています");
         gamescreen_label_oppname.setFont(new Font("MS Gothic", Font.PLAIN, 25));
         gamescreen_label_oppname.setAlignmentX(Component.CENTER_ALIGNMENT);
-        gamescreen_label_opppiece = new JLabel("黒");
+        gamescreen_label_opppiece = new JLabel("?");
         gamescreen_label_opppiece.setFont(new Font("MS Gothic", Font.BOLD, 30));
         gamescreen_label_opppiece.setAlignmentX(Component.CENTER_ALIGNMENT);
         gamescreen_label_opppiececount = new JLabel(("2枚"));
