@@ -85,6 +85,12 @@ public class Server {
                 int clientNo = 0;
                 while (clientNo < 2) {
                 Socket socket = ss.accept(); //新規接続を受け付ける
+                if (clientNo == 1 && !online[0]) {
+                    System.out.println("プレイヤ 0 が切断されたためリセットします。");
+                    socket.close();
+                    clientNo = 0;
+                    continue;
+                    }
                 System.out.println("プレイヤ " + clientNo + " が接続しました。");
                 
                 BufferedReader nameReader = new BufferedReader(
