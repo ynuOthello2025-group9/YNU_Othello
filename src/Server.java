@@ -71,16 +71,20 @@ public class Server {
 
 
     // メソッド
-	public void acceptClient(){ //クライアントの接続(サーバの起動)
-		try {
-			System.out.println("サーバが起動しました．");
-			ServerSocket ss = new ServerSocket(port); //サーバソケットを用意
-			Integer clientNo = 0; //接続クライアント数0からスタート
-            String playerName[] = new String[2];
-            String color[] = new String[2];
-            
-            while (clientNo < 2) {
-				Socket socket = ss.accept(); //新規接続を受け付ける
+	public void acceptClient() {
+    try {
+        System.out.println("サーバが起動しました。");
+        ServerSocket ss = new ServerSocket(port);
+        String[] playerName = new String[2];
+        String[] color = new String[2];
+
+        while (true) {
+            // 両方オフラインのときだけ受け入れ開始
+            if (!online[0] && !online[1]) {
+                System.out.println("両方のプレイヤーが未接続です。2人分の接続を待ちます...");
+                int clientNo = 0;
+                while (clientNo < 2) {
+                Socket socket = ss.accept(); //新規接続を受け付ける
                 System.out.println("プレイヤ " + clientNo + " が接続しました。");
                 
                 BufferedReader nameReader = new BufferedReader(
@@ -97,18 +101,21 @@ public class Server {
                 color[clientNo] = decideColor(clientNo); //先手・後手を決定
                 
                 clientNo = clientNo + 1;
+                }
+
+                sendPlayerName(playerName[0], playerName[1]);
+                sendColor(color[0], color[1]);
+            } else {
+                
+                Thread.sleep(1000); // CPU暴走防止のため少し待つ
+                }
             }
+        } catch (IOException | InterruptedException e) {
+        System.err.println("エラーが発生しました: " + e);
+        }
+    }
 
-            sendPlayerName(playerName[0], playerName[1]);
-            sendColor(color[0], color[1]);
-
-            
-		} catch (Exception e) {
-			System.err.println("ソケット作成時にエラーが発生しました: " + e);
-		}
-	}
-
-    public void sendPlayerName(String playerName1, String playerName2){
+     public void sendPlayerName(String playerName1, String playerName2){
         // プレイヤー0にプレイヤー1の名前を送信
         if (out[0] != null && online[0]) {
             out[0].println("OPPONENT:" + playerName2); // "OPPONENT:" をつけて明示
@@ -149,6 +156,7 @@ public class Server {
 
     public static void main(String[] args){ //main
 		int serverPort = 10000; //デフォルトの待ち受けポート10000番
+
         if (args.length > 0) {
             serverPort = Integer.parseInt(args[0]);
         }
