@@ -267,7 +267,7 @@ public class Client {
 
         // (5) UI
         refreshBoardUI();
-        updateStatusAndUI(currentTurn, "サーバー応答待ち…", opponentName);
+        updateStatusAndUI(currentTurn, getTurnMessage(), opponentName);
     }
 
     // ========== CPU 対戦 ==========
@@ -281,11 +281,11 @@ public class Client {
     }
 
     private void handleCpuTurn() {
-        try {
-            Thread.sleep(500 + (int)(Math.random()*1000));
-        } catch (InterruptedException e) {
-            return;
-        }
+        // try {
+        //     Thread.sleep(500 + (int)(Math.random()*1000));
+        // } catch (InterruptedException e) {
+        //     return;
+        // }
         int[] mv = cpuBrain.getCPUOperation(boardState);
         SwingUtilities.invokeLater(() -> {
             if (mv == null || mv[0] < 0) {
@@ -343,9 +343,7 @@ public class Client {
                 if (boardState[i][j] == EMPTY)
                     emptyExists = true;
         if ((!anyBlack && !anyWhite) || !emptyExists) {
-            processGameEnd(Othello.judgeWinner(boardState),
-                           (!anyBlack && !anyWhite)
-                           ? "Pass" : "BoardFull");
+            processGameEnd(Othello.judgeWinner(boardState), (!emptyExists) ? "BoardFull":"Pass");
             return true;
         }
         return false;
@@ -433,6 +431,7 @@ public class Client {
                     updateStatusAndUI(currentTurn,
                         opponentName+" はパスしました。",
                         opponentName);
+                    checkGameOverCPU();
                     break;
                 case "GAMEOVER":
                     String[] go = val.split(",", 2);
@@ -477,6 +476,7 @@ public class Client {
                     "パスできません。", opponentName);
             }
         }
+        checkGameOverCPU();
     }
 
     // ========== ゲーム終了処理 ==========
